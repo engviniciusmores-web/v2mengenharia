@@ -37,3 +37,11 @@ O visualizador mantém dependências versionadas no CDN `unpkg.com`; precisa de 
 Uploads validados por tamanho e assinatura IFC STEP, com estados pending/uploading/ready/failed. Apenas ready pode ser baixado ou associado. O R2 recebe um stream de comprimento fixo; o servidor não carrega o IFC inteiro em memória. Um envio interrompido fica indisponível e pode ser reenviado como novo registro. Nesta etapa, a biblioteca não inclui versionamento automático, compartilhamento por equipe, exclusão de arquivos, clash detection ou vínculo 4D automático entre composições e cronogramas.
 
 A federação conserva o posicionamento por uma origem única, conforme a opção de não recentralizar cada arquivo no [Web-IFC](https://github.com/ThatOpen/engine_web-ifc/blob/main/src/ts/web-ifc-api.ts). Os dados enviados pelo usuário ficam no armazenamento privado; o repositório GitHub continua contendo somente aplicação e esquemas.
+
+## Cronogramas federados
+
+A preferência da composição ativa fica no R2 por proprietário. `/api/models/active` valida a propriedade antes de definir a composição. As APIs de planejamento aceitam `?federation=<id>`; esse contexto é autorizado no servidor. O pacote é armazenado em `planning/federations/<id>/bundle.json`. A nova tabela `federation_measurements` usa composição + WBS como chave única, com migração aditiva `0007_gigantic_scrambler.sql`. O modo sem parâmetro conserva as tabelas e o pacote anteriores.
+
+O iframe federado publica inventário por mensagem de mesma origem, com fonte imutável de cada arquivo. O gerador conserva GUIDs nativos e adiciona `source_id` e `element_key` nos vínculos. A resolução prioriza a chave completa; vínculos antigos apenas por GUID não são usados quando o GUID é ambíguo na federação. Uma carga parcial não pode gerar automaticamente um novo cronograma.
+
+O modo 4D mantém geometria e metadados em memória. Novos pacotes reindexam os vínculos; mudanças de data só alteram estados visuais. O relógio de reprodução usa requestAnimationFrame, com atualização de estados limitada a cada 80 ms. Propostas por arquivo permanecem PREMISSA e não representam planejamento executivo aprovado.

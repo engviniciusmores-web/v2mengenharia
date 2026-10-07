@@ -192,3 +192,7 @@ export const modelFederationItems = sqliteTable("model_federation_items", {
   id: text("id").primaryKey(), federationId: text("federation_id").notNull().references(() => modelFederations.id),
   fileId: text("file_id").notNull().references(() => modelFiles.id), position: integer("position").notNull(),
 }, t => [uniqueIndex("idx_model_federation_file").on(t.federationId, t.fileId), uniqueIndex("idx_model_federation_position").on(t.federationId,t.position)]);
+export const federationMeasurements = sqliteTable("federation_measurements", {
+ id: text("id").primaryKey(), federationId: text("federation_id").notNull().references(() => modelFederations.id),
+ wbs: text("wbs").notNull(), actualPercent: real("actual_percent").notNull(), statusDate: text("status_date").notNull(), notes: text("notes"), source: text("source").notNull().default("manual"), updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+}, t=>[uniqueIndex("idx_federation_measurements_wbs").on(t.federationId,t.wbs)]);

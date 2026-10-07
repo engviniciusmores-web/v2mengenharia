@@ -67,6 +67,7 @@ type ViewerElement = {
 };
 
 type PlanningBundle = {
+  federation_id?:string;
   sequence?: {settings:typeof defaultSequenceOptions;model_signature:string;pending:Array<{id:number;name:string;type:string;globalId:string;reason:string}>;excluded?:Array<{id:number;name:string;reason:string}>;calendar:string;method:string;status:string};
   schema_version: number;
   generated_at: string;
@@ -254,17 +255,22 @@ function mergeProjectXml(bundle: PlanningBundle, text: string): PlanningBundle {
 }
 
 export default function PlanejamentoPage() {
+  const [federationId,setFederationId]=useState("");
+  const [scopeReady,setScopeReady]=useState(false);
+  const [federationOptions,setFederationOptions]=useState<Array<{id:string;name:string;project_name:string}>>([]);
+  const scoped=(path:string)=>federationId?`${path}?federation=${encodeURIComponent(federationId)}`:path;
+  useEffect(()=>{let alive=true;(async()=>{try{const q=new URLSearchParams(window.location.search);let id=q.get("federation")||"";if(!id&&!q.has("local")){const active=await fetch("/api/models/active",{cache:"no-store"});if(active.ok)id=(await active.json<any>()).federation?.id||"";}if(alive)setFederationId(id);const projects=await fetch("/api/models/projects",{cache:"no-store"});if(projects.ok){const data=await projects.json<any>();const lists=await Promise.all(data.projects.map(async(p:{id:string;name:string})=>{const r=await fetch("/api/models/federations?projectId="+encodeURIComponent(p.id),{cache:"no-store"});return r.ok?(await r.json<any>()).federations.map((f:{id:string;name:string})=>({...f,project_name:p.name})):[];}));if(alive)setFederationOptions(lists.flat());}if(alive)setFederationId(id);}finally{if(alive)setScopeReady(true);}})().catch(()=>{});return()=>{alive=false;};},[]);
   const [bundle, setBundle] = useState<PlanningBundle | null>(null);
   const [inventory,setInventory]=useState<Inventory|null>(null);
   const [sequenceOptions,setSequenceOptions]=useState({...defaultSequenceOptions,start:new Date().toLocaleDateString('en-CA')});
   const [sequenceDirty,setSequenceDirty]=useState(false);
   const [sequenceSaving,setSequenceSaving]=useState(false);
   const [cascade,setCascade]=useState(true);
-  useEffect(()=>{function receive(event:MessageEvent){if(event.origin!==window.location.origin||event.data?.type!=='v2m-ifc-inventory')return;const data=event.data.inventory as Inventory;if(Array.isArray(data?.elements))setInventory(data);}window.addEventListener('message',receive);return ()=>window.removeEventListener('message',receive);},[]);
-  useEffect(()=>{if(!inventory||!bundle)return;if(!bundle.wbs_rows.length&&bundle.sequence?.model_signature!==inventory.signature){const suggestion=generateSequence(inventory,sequenceOptions) as PlanningBundle;setBundle(suggestion);setSequenceDirty(true);setNotice('Cronograma sugerido automaticamente. Revise as premissas e salve para manter as datas.');}},[inventory,bundle]);
-  useEffect(()=>{if(!bundle?.sequence)return;viewerRef.current?.contentWindow?.postMessage({type:'v2m-sequence-bundle',bundle},window.location.origin);},[bundle]);
+  useEffect(()=>{function receive(event:MessageEvent){if(event.origin!==window.location.origin||event.source!==viewerRef.current?.contentWindow||event.data?.type!=='v2m-ifc-inventory')return;const data=event.data.inventory as Inventory;if(Array.isArray(data?.elements))setInventory(data);}window.addEventListener('message',receive);return ()=>window.removeEventListener('message',receive);},[]);
+  useEffect(()=>{if(!inventory||!bundle||inventory.complete===false)return;if(!bundle.wbs_rows.length&&bundle.sequence?.model_signature!==inventory.signature){const suggestion=generateSequence(inventory,sequenceOptions) as PlanningBundle;setBundle(suggestion);setStatusDate(suggestion.status_date);setSequenceDirty(true);setNotice('Cronograma sugerido automaticamente. Revise as premissas e salve para manter as datas.');}},[inventory,bundle]);
+  useEffect(()=>{if(!bundle)return;viewerRef.current?.contentWindow?.postMessage({type:'v2m-sequence-bundle',bundle},window.location.origin);},[bundle]);
   function regenerate(){if(!inventory)return;try{setBundle(generateSequence(inventory,sequenceOptions));setSequenceDirty(true);setCollapsedWbs(new Set());setPhase('Todas');setNotice('Datas recalculadas como PREMISSA. Revise e salve.');setLoadError('');}catch(error){setLoadError(error instanceof Error?error.message:'Falha ao sugerir cronograma.');}}
-  async function saveSequence(){if(!bundle)return;setSequenceSaving(true);try{await persistBundle(bundle);setSequenceDirty(false);setNotice('Cronograma e datas salvos. Os vínculos usam os GUIDs do modelo.');}catch(error){setLoadError(error instanceof Error?error.message:'Falha ao salvar.');}finally{setSequenceSaving(false);}}
+  async function saveSequence(){if(!bundle)return;setSequenceSaving(true);try{const next={...bundle,status_date:statusDate};await persistBundle(next);setBundle(next);setSequenceDirty(false);setNotice('Cronograma e datas salvos. Os vínculos mantêm o arquivo de origem e os GUIDs dos elementos.');}catch(error){setLoadError(error instanceof Error?error.message:'Falha ao salvar.');}finally{setSequenceSaving(false);}}
   function changeDate(row:WbsRow,field:'start'|'finish',value:string){if(!bundle||!value)return;try{const start=field==='start'?value:row.start?.slice(0,10)||value;const finish=field==='finish'?value:finishDate(start,row.duration_days||1,bundle.sequence?.settings.workdays??true);setBundle(reschedule(bundle,row.wbs,start,finish,cascade));setSequenceDirty(true);setLoadError('');}catch(error){setLoadError(error instanceof Error?error.message:'Data inválida.');}}
 
   const [measurements, setMeasurements] = useState<Record<string, PlanningMeasurement>>({});
@@ -288,12 +294,13 @@ export default function PlanejamentoPage() {
   const ganttInitializedRef = useRef(false);
 
   useEffect(() => {
+    if(!scopeReady)return;let alive=true;setBundle(null);setInventory(null);setMeasurements({});setDraftActual({});setSequenceDirty(false);setSelectedElement(null);setPhase("Todas");setSelectedWbs("");ganttInitializedRef.current=false;
     Promise.all([
       fetch("/data/planejamento-ifc.json", { cache: "no-store" }).then((response) => {
         if (!response.ok) throw new Error("Pacote de planejamento da versão não encontrado.");
         return response.json<any>() as Promise<PlanningBundle>;
       }),
-      fetch("/api/planning/bundle", { cache: "no-store" })
+      fetch(scoped("/api/planning/bundle"), { cache: "no-store" })
         .then((response) => response.ok ? response.json<any>() as Promise<PlanningBundle> : null)
         .catch(() => null),
     ])
@@ -303,40 +310,43 @@ export default function PlanejamentoPage() {
         const usePersisted = Boolean(
           persisted
           && hasReleasedStructuralModel(persisted)
-          && persistedTime >= packagedTime,
+          && (federationId ? persisted.federation_id===federationId : persistedTime >= packagedTime),
         );
-        const data = usePersisted && persisted ? persisted : packaged;
-        setViewerBundleUrl(usePersisted ? "/api/planning/bundle" : "/data/planejamento-ifc.json");
+        if(!alive)return;
+        const data = usePersisted && persisted ? persisted : federationId?{...packaged,federation_id:federationId}:packaged;
+        setViewerBundleUrl(usePersisted ? scoped("/api/planning/bundle") : "/data/planejamento-ifc.json");
         setBundle(data);
         if(data.sequence)setSequenceOptions(data.sequence.settings);
         setStatusDate(data.status_date);
       })
       .catch((error: Error) => setLoadError(error.message));
 
-    fetch("/api/planning", { cache: "no-store" })
+    fetch(scoped("/api/planning"), { cache: "no-store" })
       .then((response) => response.ok ? response.json<any>() : Promise.reject(new Error("Medições persistentes indisponíveis.")))
       .then((data: { measurements?: PlanningMeasurement[] }) => {
+        if(!alive)return;
         const next = Object.fromEntries((data.measurements || []).map((item) => [item.wbs, item]));
         setMeasurements(next);
         setDraftActual(Object.fromEntries((data.measurements || []).map((item) => [item.wbs, String(item.actualPercent)])));
       })
       .catch(() => setNotice("O cronograma e o modelo estão disponíveis; o banco de medições não respondeu nesta sessão."));
-  }, []);
+    return()=>{alive=false;};
+  }, [scopeReady,federationId]);
 
   async function persistBundle(next: PlanningBundle) {
-    const response = await fetch("/api/planning/bundle", {
+    const response = await fetch(scoped("/api/planning/bundle"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(next),
+      body: JSON.stringify(federationId?{...next,federation_id:federationId}:next),
     });
     const data = await response.json<any>() as { error?: string };
     if (!response.ok) throw new Error(data.error || "Falha ao salvar o cronograma atualizado.");
-    setViewerBundleUrl("/api/planning/bundle");
+    setViewerBundleUrl(scoped("/api/planning/bundle"));
   }
 
   useEffect(() => {
     function receiveViewerMessage(event: MessageEvent) {
-      if (event.origin !== window.location.origin) return;
+      if (event.origin !== window.location.origin || event.source!==viewerRef.current?.contentWindow) return;
       if (event.data?.type === "v2m-planning-date-change" && /^\d{4}-\d{2}-\d{2}$/.test(event.data.date || "")) {
         setStatusDate(event.data.date);
       }
@@ -352,7 +362,8 @@ export default function PlanejamentoPage() {
       date: statusDate,
       measurements: Object.fromEntries(Object.values(measurements).map((item) => [item.wbs, { actualPercent: item.actualPercent, statusDate: item.statusDate }])),
     }, window.location.origin);
-  }, [measurements, statusDate, modelPath]);
+  }, [measurements, statusDate, modelPath,federationId]);
+  useEffect(()=>{viewerRef.current?.contentWindow?.postMessage({type:"v2m-focus-wbs",wbs:selectedWbs},window.location.origin);},[selectedWbs]);
 
   const phaseOptions = ["Todas",...new Set(bundle?.wbs_rows.flatMap(row=>row.phases)||["Geral"])];
   const scheduleRows = useMemo(() => {
@@ -489,7 +500,7 @@ export default function PlanejamentoPage() {
   }, [allProductionRows]);
 
   async function persistMeasurements(items: PlanningMeasurement[]) {
-    const response = await fetch("/api/planning", {
+    const response = await fetch(scoped("/api/planning"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ measurements: items }),
@@ -698,14 +709,16 @@ export default function PlanejamentoPage() {
 
         {(notice || loadError) && <div className={`planning-notice ${loadError ? "error" : "ok"}`}>{loadError || notice}</div>}
 
+        <section className="planning-federation"><label>Base do modelo<select aria-label="Composição do Planejamento" value={federationId} onChange={event=>{if(sequenceDirty){setLoadError('Salve o cronograma antes de trocar a composição para manter suas alterações.');return;}const id=event.target.value;setFederationId(id);window.history.replaceState(null,'',id?'/planejamento?federation='+encodeURIComponent(id):'/planejamento?local=1');void fetch('/api/models/active',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:id||null})}).catch(()=>{});}}><option value="">IFC local · cronograma da instalação</option>{federationOptions.map(f=><option key={f.id} value={f.id}>{f.project_name} · {f.name}</option>)}</select></label><a href="/projetos">Gerenciar projetos e composições</a><p>{federationId?'O Gantt e as medições são salvos separadamente para esta composição. Os vínculos mantêm o arquivo de origem e o GlobalId de cada elemento.':'Abra um IFC local ou selecione uma composição federada da biblioteca.'}</p></section>
         <section className="sequence-generator" id="sequencia">
-          <header><div><p>IFC → SEQUÊNCIA EXECUTIVA → CRONOGRAMA</p><h2>Datas sugeridas, editáveis por atividade</h2></div><button onClick={()=>viewerRef.current?.contentWindow?.postMessage({type:'v2m-open-ifc'},window.location.origin)}>Abrir IFC</button></header>
+          <header><div><p>IFC → SEQUÊNCIA EXECUTIVA → CRONOGRAMA</p><h2>Datas sugeridas, editáveis por atividade</h2></div>{federationId?<a href="/projetos">Abrir composição na biblioteca</a>:<button onClick={()=>viewerRef.current?.contentWindow?.postMessage({type:'v2m-open-ifc'},window.location.origin)}>Abrir IFC</button>}</header>
           <p>{inventory ? `${inventory.name} · ${inventory.elements.length} elementos analisados` : 'Abra seu IFC no visualizador. A proposta será montada por fundações e pavimentos, com os elementos realmente encontrados.'}</p>
+          {inventory?.complete===false&&<p className="sequence-premise">A composição não foi carregada por completo. Confira os arquivos com falha no visualizador antes de gerar um novo cronograma.</p>}
           {inventory&&bundle?.sequence&&bundle.sequence.model_signature!==inventory.signature&&<p className="sequence-premise">O IFC aberto é diferente do modelo usado neste cronograma. Gere uma nova proposta para vincular os elementos atuais; o cronograma anterior permanece salvo até você salvar a substituição.</p>}
-          {inventory&&<details className="ifc-information"><summary>Informações lidas do IFC · {inventory.elements.length} objetos</summary><p>Classes IFC, códigos P/PJ, V e L, propriedades de ocorrência/tipo, pavimentos, materiais e unidades. A ISO 19650 orienta a gestão e rastreabilidade; os códigos e campos dependem da convenção acordada no projeto/BEP.</p><button onClick={()=>{const blob=new Blob([JSON.stringify(inventory,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const link=document.createElement('a');link.href=url;link.download='informacoes-ifc.json';link.click();URL.revokeObjectURL(url);}}>Baixar informações completas do IFC</button><div className="sequence-table-wrap"><table className="sequence-edit-table"><thead><tr><th>Código / nome</th><th>Classe IFC</th><th>Função reconhecida</th><th>Pavimento / fonte</th><th>Propriedades disponíveis</th></tr></thead><tbody>{inventory.elements.slice(0,100).map(element=><tr key={element.globalId||element.id}><td>{element.code||element.name}<small>{element.globalId}</small></td><td>{element.type}</td><td>{element.structuralKind||'A_CONFIRMAR'}<small>{element.classificationSource}</small></td><td>{element.storeyName||'A_CONFIRMAR'}<small>{element.levelSource}</small></td><td>{(element.propertySets||[]).map(ps=><div key={ps.name}><b>{ps.name}</b><small>{ps.properties.map(p=>`${p.name}: ${String(p.value??'—')}`).join(' · ')}</small></div>)}</td></tr>)}</tbody></table></div><p>Primeiros 100 objetos na tela; o arquivo JSON inclui todos os objetos lidos. As quantidades de objetos IFC não equivalem automaticamente a peças físicas ou quantitativos de medição.</p></details>}
+          {inventory&&<details className="ifc-information"><summary>Informações lidas do IFC · {inventory.elements.length} objetos</summary><p>Classes IFC, códigos P/PJ, V e L, propriedades de ocorrência/tipo, pavimentos, materiais e unidades. A ISO 19650 orienta a gestão e rastreabilidade; os códigos e campos dependem da convenção acordada no projeto/BEP.</p><button onClick={()=>{const blob=new Blob([JSON.stringify(inventory,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const link=document.createElement('a');link.href=url;link.download='informacoes-ifc.json';link.click();URL.revokeObjectURL(url);}}>Baixar informações completas do IFC</button><div className="sequence-table-wrap"><table className="sequence-edit-table"><thead><tr><th>Código / nome</th><th>Classe IFC</th><th>Função reconhecida</th><th>Pavimento / fonte</th><th>Propriedades disponíveis</th></tr></thead><tbody>{inventory.elements.slice(0,100).map(element=><tr key={element.key||element.globalId||element.id}><td>{element.code||element.name}<small>{element.sourceName}</small><small>{element.globalId}</small></td><td>{element.type}</td><td>{element.structuralKind||'A_CONFIRMAR'}<small>{element.classificationSource}</small></td><td>{element.storeyName||'A_CONFIRMAR'}<small>{element.levelSource}</small></td><td>{(element.propertySets||[]).map(ps=><div key={ps.name}><b>{ps.name}</b><small>{ps.properties.map(p=>`${p.name}: ${String(p.value??'—')}`).join(' · ')}</small></div>)}</td></tr>)}</tbody></table></div><p>Primeiros 100 objetos na tela; o arquivo JSON inclui todos os objetos lidos. As quantidades de objetos IFC não equivalem automaticamente a peças físicas ou quantitativos de medição.</p></details>}
           <div className="sequence-settings"><label>Início sugerido<input type="date" value={sequenceOptions.start} onChange={e=>setSequenceOptions({...sequenceOptions,start:e.target.value})}/></label><label>Calendário<select value={sequenceOptions.workdays?'uteis':'corridos'} onChange={e=>setSequenceOptions({...sequenceOptions,workdays:e.target.value==='uteis'})}><option value="uteis">Segunda a sexta · sem feriados</option><option value="corridos">Dias corridos</option></select></label>{([['foundationDays','Fundações'],['columnDays','Pilares'],['beamDays','Vigas'],['slabDays','Lajes'],['otherDays','Outros serviços'],['releaseDays','Espera e liberação']] as const).map(([key,label])=><label key={key}>{label} · dias<input type="number" min="1" max="365" value={sequenceOptions[key]} onChange={e=>setSequenceOptions({...sequenceOptions,[key]:Number(e.target.value)})}/></label>)}</div>
           <p className="sequence-premise">PREMISSA: ciclo estrutural sequencial, sem frentes paralelas. Durações por pacote, sem cálculo de produtividade. A espera é uma reserva editável; não representa prazo comprovado de cura ou autorização para carregar/desescorar.</p>
-          <div className="sequence-actions"><button disabled={!inventory} onClick={regenerate}>{bundle?.sequence?'Regerar com estas premissas':'Gerar proposta do IFC'}</button><button disabled={!bundle?.sequence||sequenceSaving} onClick={()=>void saveSequence()}>{sequenceSaving?'Salvando…':sequenceDirty?'Salvar cronograma sugerido':'Salvar cronograma'}</button><label><input type="checkbox" checked={cascade} onChange={e=>setCascade(e.target.checked)}/>Reprogramar atividades seguintes ao editar datas</label></div>
+          <div className="sequence-actions"><button disabled={!inventory||inventory.complete===false} onClick={regenerate}>{bundle?.sequence?'Regerar com estas premissas':'Gerar proposta do IFC'}</button><button disabled={!bundle?.sequence||sequenceSaving} onClick={()=>void saveSequence()}>{sequenceSaving?'Salvando…':sequenceDirty?'Salvar cronograma sugerido':'Salvar cronograma'}</button><label><input type="checkbox" checked={cascade} onChange={e=>setCascade(e.target.checked)}/>Reprogramar atividades seguintes ao editar datas</label></div>
           {bundle?.sequence&&<><p><b>{bundle.wbs_rows.length} atividades · {bundle.elements.length} elementos vinculados · {bundle.sequence.pending.length} para revisar · {bundle.sequence.excluded?.length||0} vazios separados</b> · {sequenceDirty?'Alterações ainda não salvas':'Cronograma salvo'}</p><div className="sequence-table-wrap"><table className="sequence-edit-table"><thead><tr><th>EAP</th><th>Atividade / fonte</th><th>Elementos</th><th>Predecessora</th><th>Início</th><th>Término</th><th>Dias</th></tr></thead><tbody>{bundle.wbs_rows.map(row=><tr key={row.wbs}><td>{row.wbs}</td><td><b>{row.name}</b><small>{row.evidence} · {row.rule}</small></td><td>{row.direct_elements}</td><td>{row.predecessor||'—'}</td><td><input aria-label={`Início ${row.wbs}`} type="date" value={row.start?.slice(0,10)||''} onInput={e=>changeDate(row,'start',e.currentTarget.value)}/></td><td><input aria-label={`Término ${row.wbs}`} type="date" value={row.finish?.slice(0,10)||''} onInput={e=>changeDate(row,'finish',e.currentTarget.value)}/></td><td>{row.duration_days}</td></tr>)}</tbody></table></div><details><summary>Elementos fora do cronograma · {bundle.sequence.pending.length}</summary><p>Confira o pavimento e a classificação no modelo e recarregue, ou revise o pacote JSON. Nenhum desses elementos foi descartado do visualizador. A lista mostra os primeiros 100; o pacote do cronograma mantém todos os registros.</p>{bundle.sequence.pending.slice(0,100).map((item,index)=><p key={`${item.id}-${index}`}><b>{item.name}</b> · {item.type} · {item.globalId||item.id} · {item.reason}</p>)}</details></>}
           {inventory&&bundle?.wbs_rows.length&&!bundle.sequence&&<p>Há um cronograma ativo. “Gerar proposta do IFC” substitui a programação no rascunho; a substituição só é mantida após salvar.</p>}
         </section>
@@ -796,15 +809,15 @@ export default function PlanejamentoPage() {
           <header>
             <div><p>MODELO IFC 4D INTERATIVO</p><h2>O que deveria estar programado até {formatDate(statusDate)}</h2><small>Arraste, aproxime, selecione elementos e mova a linha do tempo. A data do modelo e do painel ficam sincronizadas.</small></div>
             <div className="planning-model-actions">
-              <button onClick={() => viewerRef.current?.contentWindow?.postMessage({type:"v2m-open-ifc"},window.location.origin)}>ABRIR IFC</button>
+              {federationId?<a href="/projetos">TROCAR COMPOSIÇÃO</a>:<button onClick={() => viewerRef.current?.contentWindow?.postMessage({type:"v2m-open-ifc"},window.location.origin)}>ABRIR IFC</button>}
               <button onClick={() => viewerRef.current?.requestFullscreen()}>TELA CHEIA</button>
             </div>
           </header>
           <iframe
             ref={viewerRef}
             title="Modelo IFC 4D conectado ao cronograma preliminar"
-            src={`/bim-viewer/index.html?mode=planning&model=${encodeURIComponent(modelPath)}&bundle=${encodeURIComponent(viewerBundleUrl)}&v=2`}
-            onLoad={() => {viewerRef.current?.contentWindow?.postMessage({type:"v2m-planning-update",date:statusDate,measurements:Object.fromEntries(Object.values(measurements).map(item=>[item.wbs,{actualPercent:item.actualPercent,statusDate:item.statusDate}]))},window.location.origin);viewerRef.current?.contentWindow?.postMessage({type:"v2m-request-inventory"},window.location.origin);if(bundle?.sequence)viewerRef.current?.contentWindow?.postMessage({type:"v2m-sequence-bundle",bundle},window.location.origin);}}
+            src={federationId?`/bim-viewer/federated.html?mode=planning&federation=${encodeURIComponent(federationId)}&v=2`:`/bim-viewer/index.html?mode=planning&model=${encodeURIComponent(modelPath)}&bundle=${encodeURIComponent(viewerBundleUrl)}&v=2`}
+            onLoad={() => {viewerRef.current?.contentWindow?.postMessage({type:"v2m-planning-update",date:statusDate,measurements:Object.fromEntries(Object.values(measurements).map(item=>[item.wbs,{actualPercent:item.actualPercent,statusDate:item.statusDate}]))},window.location.origin);viewerRef.current?.contentWindow?.postMessage({type:"v2m-request-inventory"},window.location.origin);if(bundle)viewerRef.current?.contentWindow?.postMessage({type:"v2m-sequence-bundle",bundle},window.location.origin);}}
           />
           <footer className="planning-model-legend">
             <span><i className="done"/>EXECUTADO INFORMADO</span>

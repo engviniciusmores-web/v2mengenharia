@@ -80,3 +80,13 @@ O comando de migração usa somente o banco local. Em um checkout antigo cujo ba
 A biblioteca é organizada por projeto. Os módulos anteriores de orçamento, planejamento, compras, qualidade e diário mantêm seu escopo existente por instalação; criar um projeto na biblioteca não altera esses dados nem implementa isolamento multiempresa para todos os módulos.
 
 Validação: testes de federação, upload/download e persistência em D1/R2 local, bloqueio de 21 arquivos e acesso entre proprietários; abertura real de conjuntos sintéticos no navegador. Veja também [arquitetura](docs/arquitetura.md).
+
+## Federação no Planejamento e no Gantt
+
+Na biblioteca, abra uma composição salva e clique em **Usar no Planejamento**. Ela passa a aparecer na Visão geral e em Planejamento, com todos os IFCs na mesma cena. Também é possível selecionar outra composição pelo campo **Base do modelo** no Planejamento.
+
+A leitura de classes, propriedades e pavimentos de todos os arquivos permite gerar uma proposta de cronograma para o conjunto. Os vínculos guardam arquivo de origem, ExpressID e GlobalId; identificadores iguais em arquivos distintos não se confundem. Atividades mantêm o arquivo de origem no nome. A proposta segue a ordenação e as durações preliminares do gerador existente, sem inferir frentes paralelas ou aprovar produtividade. Elementos sem geometria suportada, função ou pavimento ficam para revisão.
+
+Cada composição tem seu pacote de cronograma no R2 e suas medições no D1, protegidos pelo proprietário. Salvar uma composição não substitui o cronograma de outra nem o antigo cronograma local da instalação. Datas editadas e a data de status permanecem no pacote salvo. Ao mudar a data, a cena e o Gantt se atualizam sem baixar ou reconstruir os IFCs. Clique em uma atividade para destacar seus elementos; clique em um elemento para consultar a atividade/WBS.
+
+A Visão geral reabre a composição ativa e fornece acesso direto ao seu Gantt. Para voltar ao modo anterior, selecione **IFC local · cronograma da instalação** no Planejamento. Salve o rascunho antes de trocar de composição. As tabelas e os dados de orçamento, compras, custos, qualidade e diário não foram migrados para escopos por composição nesta alteração.

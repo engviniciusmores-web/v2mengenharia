@@ -36,3 +36,13 @@ export function libraryFailure(error: unknown) {
   console.error("Model library error", error);
   return Response.json({error:"Não foi possível concluir a operação. Tente novamente."},{status:503});
 }
+export async function ownedFederation(id: string, owner: string) {
+ const row=await libraryEnv().DB.prepare("SELECT f.id,f.name,f.project_id,p.name AS project_name FROM model_federations f JOIN model_projects p ON p.id=f.project_id WHERE f.id=? AND p.owner_id=?").bind(id,owner).first<{id:string;name:string;project_id:string;project_name:string}>();
+ if(!row)throw new LibraryError("Composição não encontrada.",404);
+ return row;
+}
+export async function planningScope(request: Request) {
+ const id=new URL(request.url).searchParams.get('federation');
+ if(!id)return null;
+ await ownedFederation(id,libraryUser(request));return id;
+}
