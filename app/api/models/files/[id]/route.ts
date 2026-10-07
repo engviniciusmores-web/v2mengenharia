@@ -28,3 +28,16 @@ export async function PUT(request:Request,context:Context){let reserved:{id:stri
  await DB.prepare("UPDATE model_files SET status='ready' WHERE id=? AND status='uploading'").bind(id).run();
  reserved=null;return Response.json({saved:true,id},{status:201});
 }catch(e){if(reserved){const {DB,FILES}=libraryEnv();await FILES.delete(reserved.key).catch(()=>{});await DB.prepare("UPDATE model_files SET status='failed' WHERE id=?").bind(reserved.id).run().catch(()=>{});}return libraryFailure(e);}}
+
+// Keep a retryable tombstone if object storage or the final database cleanup fails.
+export async function DELETE(request:Request,context:Context){try{
+ const owner=libraryUser(request),{id}=await context.params,file=await ownedFile(id,owner),{DB,FILES}=libraryEnv();
+ const claim=await DB.prepare("UPDATE model_files SET status='deleting' WHERE id=? AND status!='uploading'").bind(id).run();
+ if(!claim.meta.changes)throw new LibraryError("O IFC está sendo enviado. Aguarde o envio terminar antes de excluir.",409);
+ await FILES.delete(file.storage_key);
+ await DB.batch([
+  DB.prepare("DELETE FROM model_federation_items WHERE file_id=?").bind(id),
+  DB.prepare("DELETE FROM model_files WHERE id=? AND status='deleting'").bind(id),
+ ]);
+ return Response.json({deleted:true,id});
+}catch(e){return libraryFailure(e);}}
