@@ -34,6 +34,11 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {children}
+        <footer className="site-authorship" aria-label="Autoria da plataforma">
+          <span className="site-authorship-mark" aria-hidden="true">VM</span>
+          <div><strong>Elaborado por Engº Vinicius Morés</strong><span>CREA 240732 · Criação e desenvolvimento da plataforma</span><div className="site-authorship-contacts"><a href="mailto:engviniciusmores@outlook.com">engviniciusmores@outlook.com</a><a href="tel:+5551999988955">(51) 99998-8955</a></div></div>
+          <small>© 2026 · Todos os direitos reservados.</small>
+        </footer>
       </body>
     </html>
   );

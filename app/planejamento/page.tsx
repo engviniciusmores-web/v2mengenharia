@@ -1,5 +1,6 @@
 "use client";
 
+import {displayTree,shortId,editActivity,addActivity,removeActivity} from "./schedule-editor.js";
 import {generateSequence,defaultSequenceOptions,reschedule,finishDate,type Inventory} from "../../public/bim-viewer/sequence.js";
 import { ChangeEvent, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 
@@ -68,6 +69,7 @@ type ViewerElement = {
 
 type PlanningBundle = {
   federation_id?:string;
+  user_modified?:boolean;
   sequence?: {settings:typeof defaultSequenceOptions;model_signature:string;pending:Array<{id:number;name:string;type:string;globalId:string;reason:string}>;excluded?:Array<{id:number;name:string;reason:string}>;calendar:string;method:string;status:string};
   schema_version: number;
   generated_at: string;
@@ -123,6 +125,7 @@ type PlanningBundle = {
 
 
 
+const ganttColumnMinimums=[44,200,66,66,72,104];
 const modelOptions = [{ value: "", label: "Abra o IFC no visualizador" }];
 
 function phaseLabel(row: WbsRow) {
@@ -260,6 +263,15 @@ export default function PlanejamentoPage() {
   const [federationOptions,setFederationOptions]=useState<Array<{id:string;name:string;project_name:string}>>([]);
   const scoped=(path:string)=>federationId?`${path}?federation=${encodeURIComponent(federationId)}`:path;
   useEffect(()=>{let alive=true;(async()=>{try{const q=new URLSearchParams(window.location.search);let id=q.get("federation")||"";if(!id&&!q.has("local")){const active=await fetch("/api/models/active",{cache:"no-store"});if(active.ok)id=(await active.json<any>()).federation?.id||"";}if(alive)setFederationId(id);const projects=await fetch("/api/models/projects",{cache:"no-store"});if(projects.ok){const data=await projects.json<any>();const lists=await Promise.all(data.projects.map(async(p:{id:string;name:string})=>{const r=await fetch("/api/models/federations?projectId="+encodeURIComponent(p.id),{cache:"no-store"});return r.ok?(await r.json<any>()).federations.map((f:{id:string;name:string})=>({...f,project_name:p.name})):[];}));if(alive)setFederationOptions(lists.flat());}if(alive)setFederationId(id);}finally{if(alive)setScopeReady(true);}})().catch(()=>{});return()=>{alive=false;};},[]);
+  const [sidebarCollapsed,setSidebarCollapsed]=useState(false);
+  const [columnWidths,setColumnWidths]=useState([48,320,82,82,72,112]);
+  const [ganttFont,setGanttFont]=useState(16);
+  const [layoutReady,setLayoutReady]=useState(false);
+  const [undoStack,setUndoStack]=useState<PlanningBundle[]>([]);
+  const [activityEditor,setActivityEditor]=useState<{mode:'add'|'edit';wbs:string;name:string;start:string;finish:string;phase:string;predecessor:string}|null>(null);
+  useEffect(()=>{try{const saved=JSON.parse(localStorage.getItem('v2m-planning-layout')||'null');if(saved){if(Array.isArray(saved.widths)&&saved.widths.length===6)setColumnWidths(saved.widths.map((v:number,i:number)=>Math.max(ganttColumnMinimums[i],Math.min(i===1?1000:260,Number(v)||80))));if([14,16,18].includes(saved.font))setGanttFont(saved.font);setSidebarCollapsed(Boolean(saved.closed));}else if(window.matchMedia('(max-width:760px)').matches)setSidebarCollapsed(true);}catch{}setLayoutReady(true);},[]);
+  useEffect(()=>{if(layoutReady)localStorage.setItem('v2m-planning-layout',JSON.stringify({widths:columnWidths,font:ganttFont,closed:sidebarCollapsed}));},[columnWidths,ganttFont,sidebarCollapsed,layoutReady]);
+  function resizeColumn(index:number,event:React.PointerEvent<HTMLElement>){event.preventDefault();const target=event.currentTarget,x=event.clientX,initial=columnWidths[index];target.setPointerCapture(event.pointerId);const move=(next:PointerEvent)=>setColumnWidths(current=>current.map((v,i)=>i===index?Math.max(ganttColumnMinimums[index],Math.min(index===1?1000:260,initial+next.clientX-x)):v));const finish=()=>{target.removeEventListener('pointermove',move);target.removeEventListener('pointerup',finish);target.removeEventListener('pointercancel',finish);};target.addEventListener('pointermove',move);target.addEventListener('pointerup',finish);target.addEventListener('pointercancel',finish);}
   const [bundle, setBundle] = useState<PlanningBundle | null>(null);
   const [inventory,setInventory]=useState<Inventory|null>(null);
   const [sequenceOptions,setSequenceOptions]=useState({...defaultSequenceOptions,start:new Date().toLocaleDateString('en-CA')});
@@ -267,11 +279,11 @@ export default function PlanejamentoPage() {
   const [sequenceSaving,setSequenceSaving]=useState(false);
   const [cascade,setCascade]=useState(true);
   useEffect(()=>{function receive(event:MessageEvent){if(event.origin!==window.location.origin||event.source!==viewerRef.current?.contentWindow||event.data?.type!=='v2m-ifc-inventory')return;const data=event.data.inventory as Inventory;if(Array.isArray(data?.elements))setInventory(data);}window.addEventListener('message',receive);return ()=>window.removeEventListener('message',receive);},[]);
-  useEffect(()=>{if(!inventory||!bundle||inventory.complete===false)return;if(!bundle.wbs_rows.length&&bundle.sequence?.model_signature!==inventory.signature){const suggestion=generateSequence(inventory,sequenceOptions) as PlanningBundle;setBundle(suggestion);setStatusDate(suggestion.status_date);setSequenceDirty(true);setNotice('Cronograma sugerido automaticamente. Revise as premissas e salve para manter as datas.');}},[inventory,bundle]);
+  useEffect(()=>{if(!inventory||!bundle||inventory.complete===false||bundle.user_modified)return;if(!bundle.wbs_rows.length&&bundle.sequence?.model_signature!==inventory.signature){const suggestion=generateSequence(inventory,sequenceOptions) as PlanningBundle;setBundle(suggestion);setStatusDate(suggestion.status_date);setSequenceDirty(true);setNotice('Cronograma sugerido automaticamente. Revise as premissas e salve para manter as datas.');}},[inventory,bundle]);
   useEffect(()=>{if(!bundle)return;viewerRef.current?.contentWindow?.postMessage({type:'v2m-sequence-bundle',bundle},window.location.origin);},[bundle]);
-  function regenerate(){if(!inventory)return;try{setBundle(generateSequence(inventory,sequenceOptions));setSequenceDirty(true);setCollapsedWbs(new Set());setPhase('Todas');setNotice('Datas recalculadas como PREMISSA. Revise e salve.');setLoadError('');}catch(error){setLoadError(error instanceof Error?error.message:'Falha ao sugerir cronograma.');}}
+  function regenerate(){if(!inventory)return;try{commitEdit(generateSequence(inventory,sequenceOptions));setSequenceDirty(true);setCollapsedWbs(new Set());setPhase('Todas');setNotice('Datas recalculadas como PREMISSA. Revise e salve.');setLoadError('');}catch(error){setLoadError(error instanceof Error?error.message:'Falha ao sugerir cronograma.');}}
   async function saveSequence(){if(!bundle)return;setSequenceSaving(true);try{const next={...bundle,status_date:statusDate};await persistBundle(next);setBundle(next);setSequenceDirty(false);setNotice('Cronograma e datas salvos. Os vínculos mantêm o arquivo de origem e os GUIDs dos elementos.');}catch(error){setLoadError(error instanceof Error?error.message:'Falha ao salvar.');}finally{setSequenceSaving(false);}}
-  function changeDate(row:WbsRow,field:'start'|'finish',value:string){if(!bundle||!value)return;try{const start=field==='start'?value:row.start?.slice(0,10)||value;const finish=field==='finish'?value:finishDate(start,row.duration_days||1,bundle.sequence?.settings.workdays??true);setBundle(reschedule(bundle,row.wbs,start,finish,cascade));setSequenceDirty(true);setLoadError('');}catch(error){setLoadError(error instanceof Error?error.message:'Data inválida.');}}
+  function changeDate(row:WbsRow,field:'start'|'finish',value:string){if(!bundle||!value)return;try{const start=field==='start'?value:row.start?.slice(0,10)||value;const finish=field==='finish'?value:finishDate(start,row.duration_days||1,bundle.sequence?.settings.workdays??true);commitEdit(editActivity(bundle,row.wbs,{name:row.name,start,finish,predecessor:row.predecessor||'',phase:row.phases?.[0]||'Atividades'},cascade));setSequenceDirty(true);setLoadError('');}catch(error){setLoadError(error instanceof Error?error.message:'Data inválida.');}}
 
   const [measurements, setMeasurements] = useState<Record<string, PlanningMeasurement>>({});
   const [draftActual, setDraftActual] = useState<Record<string, string>>({});
@@ -294,7 +306,7 @@ export default function PlanejamentoPage() {
   const ganttInitializedRef = useRef(false);
 
   useEffect(() => {
-    if(!scopeReady)return;let alive=true;setBundle(null);setInventory(null);setMeasurements({});setDraftActual({});setSequenceDirty(false);setSelectedElement(null);setPhase("Todas");setSelectedWbs("");ganttInitializedRef.current=false;
+    if(!scopeReady)return;let alive=true;setBundle(null);setUndoStack([]);setActivityEditor(null);setInventory(null);setMeasurements({});setDraftActual({});setSequenceDirty(false);setSelectedElement(null);setPhase("Todas");setSelectedWbs("");ganttInitializedRef.current=false;
     Promise.all([
       fetch("/data/planejamento-ifc.json", { cache: "no-store" }).then((response) => {
         if (!response.ok) throw new Error("Pacote de planejamento da versão não encontrado.");
@@ -374,32 +386,13 @@ export default function PlanejamentoPage() {
 
   const allProductionRows = useMemo(() => scheduleRows.filter((row) => !row.summary), [scheduleRows]);
 
-  useEffect(() => {
-    if (!bundle || ganttInitializedRef.current) return;
-    ganttInitializedRef.current = true;
-    setCollapsedWbs(new Set(bundle.wbs_rows
-      .filter((row) => row.summary && ganttLevel(row) >= 2)
-      .map((row) => row.wbs)));
-  }, [bundle]);
-
+  const ganttTree=useMemo(()=>displayTree(scheduleRows),[scheduleRows]);
+  const activityNumbers=useMemo(()=>new Map(scheduleRows.map((r,i)=>[r.wbs,i])),[scheduleRows]);
   const visibleGanttRows = useMemo(() => {
-    const term = search.trim().toLocaleLowerCase("pt-BR");
-    const filtering = Boolean(term || phase !== "Todas");
-    const included = new Set<string>();
-    if (filtering) {
-      for (const row of scheduleRows) {
-        const matchesTerm = !term || `${row.wbs} ${row.name}`.toLocaleLowerCase("pt-BR").includes(term);
-        const matchesPhase = phase === "Todas" || row.phases?.includes(phase);
-        if (!matchesTerm || !matchesPhase) continue;
-        included.add(row.wbs);
-        ganttAncestors(row.wbs).forEach((ancestor) => included.add(ancestor));
-      }
-    }
-    return scheduleRows.filter((row) => {
-      if (filtering) return included.has(row.wbs);
-      return !ganttAncestors(row.wbs).some((ancestor) => collapsedWbs.has(ancestor));
-    });
-  }, [collapsedWbs, phase, scheduleRows, search]);
+    const term=search.trim().toLocaleLowerCase('pt-BR'),filtering=Boolean(term||phase!=='Todas'),included=new Set<string>();
+    if(filtering)for(const row of ganttTree.rows){if(row.virtual_group)continue;if((!term||`${shortId(row,activityNumbers.get(row.wbs)||0)} ${row.wbs} ${row.name}`.toLocaleLowerCase('pt-BR').includes(term))&&(phase==='Todas'||row.phases?.includes(phase))){included.add(row.wbs);for(const id of ganttTree.parents.get(row.wbs)||[])included.add(id);}}
+    return ganttTree.rows.filter(row=>(!filtering||included.has(row.wbs))&&!(ganttTree.parents.get(row.wbs)||[]).some(id=>collapsedWbs.has(id)));
+  },[ganttTree,collapsedWbs,search,phase,activityNumbers]);
 
   const ganttTimeline = useMemo(() => {
     const dated = scheduleRows.flatMap((row) => [ganttDate(row.start), ganttDate(row.finish)]).filter((value): value is number => value !== null);
@@ -411,7 +404,7 @@ export default function PlanejamentoPage() {
     const startMs = Date.UTC(minimumDate.getUTCFullYear(), minimumDate.getUTCMonth(), 1);
     const endMs = Date.UTC(maximumDate.getUTCFullYear(), maximumDate.getUTCMonth() + 1, 0);
     const totalDays = Math.max(1, Math.round((endMs - startMs) / DAY_MS) + 1);
-    const pxPerDay = ganttZoom === "semana" ? 19 : 6.2;
+    const pxPerDay = ganttZoom === "semana" ? 36 : 8;
     const width = Math.max(920, Math.ceil(totalDays * pxPerDay));
     const months: Array<{ label: string; left: number; width: number }> = [];
     let cursor = startMs;
@@ -440,6 +433,17 @@ export default function PlanejamentoPage() {
     return { startMs, endMs, totalDays, pxPerDay, width, months, ticks, statusLeft: ((statusMs - startMs) / DAY_MS) * pxPerDay };
   }, [ganttZoom, scheduleRows, statusDate]);
 
+  function commitEdit(next:PlanningBundle){if(bundle)setUndoStack(stack=>[...stack.slice(-19),bundle]);setBundle(next);setSequenceDirty(true);setLoadError('');}
+  function openActivityEditor(mode:'add'|'edit'){
+    const row=bundle?.wbs_rows.find(r=>r.wbs===selectedWbs);if(mode==='edit'&&(!row||row.summary)){setLoadError('Selecione uma atividade individual para editar.');return;}
+    let start=row?.start?.slice(0,10)||statusDate,finish=row?.finish?.slice(0,10)||start;
+    if(mode==='add'){if(row?.finish){const day=new Date(row.finish.slice(0,10)+'T12:00:00Z');day.setUTCDate(day.getUTCDate()+1);start=finishDate(day.toISOString().slice(0,10),1,bundle?.sequence?.settings.workdays??true);}else start=finishDate(statusDate,1,bundle?.sequence?.settings.workdays??true);finish=start;}
+    setActivityEditor({mode,wbs:mode==='edit'?row!.wbs:selectedWbs,name:mode==='edit'?row!.name:'',start,finish,phase:row?.phases?.[0]||'Atividades manuais',predecessor:mode==='edit'?row?.predecessor||'':row&&!row.summary?row.wbs:''});setLoadError('');
+  }
+  function applyActivityEditor(){if(!bundle||!activityEditor)return;try{const next=activityEditor.mode==='add'?addActivity(bundle,activityEditor,activityEditor.wbs):editActivity(bundle,activityEditor.wbs,activityEditor,cascade);commitEdit(next);if(activityEditor.mode==='add'){const added=next.wbs_rows.find((r:WbsRow)=>!bundle.wbs_rows.some(old=>old.wbs===r.wbs));if(added)setSelectedWbs(added.wbs);}setCollapsedWbs(new Set());setActivityEditor(null);setNotice('Alteração aplicada ao rascunho. Salve o cronograma para mantê-la.');}catch(e){setLoadError(e instanceof Error?e.message:'Falha ao editar atividade.');}}
+  function deleteSelectedActivity(){if(!bundle)return;try{commitEdit(removeActivity(bundle,selectedWbs));setSelectedWbs('');setSelectedElement(null);setActivityEditor(null);setNotice('Atividade removida do rascunho. Os elementos continuam no modelo, sem esse vínculo. Use Desfazer para restaurar.');}catch(e){setLoadError(e instanceof Error?e.message:'Falha ao remover atividade.');}}
+  function undoEdit(){const previous=undoStack.at(-1);if(!previous)return;setBundle(previous);setUndoStack(stack=>stack.slice(0,-1));setSequenceDirty(true);setSelectedWbs('');setSelectedElement(null);setActivityEditor(null);setNotice('Última edição desfeita. Salve para manter esta versão.');}
+
   function toggleGanttRow(wbs: string) {
     setCollapsedWbs((current) => {
       const next = new Set(current);
@@ -453,13 +457,13 @@ export default function PlanejamentoPage() {
   }
 
   function collapseAllGantt() {
-    setCollapsedWbs(new Set(scheduleRows.filter((row) => row.summary).map((row) => row.wbs)));
+    setCollapsedWbs(new Set(ganttTree.rows.filter((row) => row.summary).map((row) => row.wbs)));
   }
 
   function focusStatusDate() {
     const viewport = ganttScrollRef.current;
     if (!viewport) return;
-    const available = Math.max(280, viewport.clientWidth - 630);
+    const available = Math.max(280, viewport.clientWidth - columnWidths.reduce((a,b)=>a+b,0));
     viewport.scrollTo({ left: Math.max(0, ganttTimeline.statusLeft - (available / 2)), behavior: "smooth" });
   }
 
@@ -668,8 +672,9 @@ export default function PlanejamentoPage() {
   const mptAudit = bundle.sources.schedule_comparison;
 
   return (
-    <div className="planning-shell">
-      <aside className="planning-sidebar">
+    <div className={`planning-shell ${sidebarCollapsed?"sidebar-closed":""}`}>
+      {!sidebarCollapsed&&<button className="planning-menu-backdrop" aria-label="Fechar menu" onClick={()=>setSidebarCollapsed(true)}/> }
+      <aside className="planning-sidebar" id="planning-navigation"><button className="planning-sidebar-close" onClick={()=>setSidebarCollapsed(true)}>Fechar menu ×</button>
         <a className="planning-brand" href="/"><img src="/v2m-brand.svg" alt="V2M ENGENHARIA"/><span>V2M<br/>GESTAO 5D</span></a>
         <div className="planning-project"><b>V2M ENGENHARIA</b><small>Gestão integrada de obras</small></div>
         <p>PLANEJAMENTO</p>
@@ -693,7 +698,7 @@ export default function PlanejamentoPage() {
         <header className="planning-command">
           <div><small>OBRAS / V2M /</small><b> PLANEJAMENTO 4D / 5D</b></div>
           <div>
-            <label><span>DATA DE STATUS</span><input type="date" value={statusDate} onChange={(event) => setStatusDate(event.target.value)}/></label>
+            <button className="planning-menu-toggle" aria-controls="planning-navigation" aria-expanded={!sidebarCollapsed} onClick={()=>setSidebarCollapsed(value=>!value)}>{sidebarCollapsed?"☰ Abrir menu":"☰ Fechar menu"}</button><label><span>DATA DE STATUS</span><input type="date" value={statusDate} onChange={(event) => setStatusDate(event.target.value)}/></label>
             <button className="secondary" onClick={exportMeasurements}>EXPORTAR MEDICAO</button>
             <button className="secondary" onClick={() => measurementFileRef.current?.click()}>IMPORTAR MEDICAO</button>
             <button onClick={() => fileRef.current?.click()}>ATUALIZAR CRONOGRAMA</button>
@@ -718,7 +723,7 @@ export default function PlanejamentoPage() {
           {inventory&&<details className="ifc-information"><summary>Informações lidas do IFC · {inventory.elements.length} objetos</summary><p>Classes IFC, códigos P/PJ, V e L, propriedades de ocorrência/tipo, pavimentos, materiais e unidades. A ISO 19650 orienta a gestão e rastreabilidade; os códigos e campos dependem da convenção acordada no projeto/BEP.</p><button onClick={()=>{const blob=new Blob([JSON.stringify(inventory,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const link=document.createElement('a');link.href=url;link.download='informacoes-ifc.json';link.click();URL.revokeObjectURL(url);}}>Baixar informações completas do IFC</button><div className="sequence-table-wrap"><table className="sequence-edit-table"><thead><tr><th>Código / nome</th><th>Classe IFC</th><th>Função reconhecida</th><th>Pavimento / fonte</th><th>Propriedades disponíveis</th></tr></thead><tbody>{inventory.elements.slice(0,100).map(element=><tr key={element.key||element.globalId||element.id}><td>{element.code||element.name}<small>{element.sourceName}</small><small>{element.globalId}</small></td><td>{element.type}</td><td>{element.structuralKind||'A_CONFIRMAR'}<small>{element.classificationSource}</small></td><td>{element.storeyName||'A_CONFIRMAR'}<small>{element.levelSource}</small></td><td>{(element.propertySets||[]).map(ps=><div key={ps.name}><b>{ps.name}</b><small>{ps.properties.map(p=>`${p.name}: ${String(p.value??'—')}`).join(' · ')}</small></div>)}</td></tr>)}</tbody></table></div><p>Primeiros 100 objetos na tela; o arquivo JSON inclui todos os objetos lidos. As quantidades de objetos IFC não equivalem automaticamente a peças físicas ou quantitativos de medição.</p></details>}
           <div className="sequence-settings"><label>Início sugerido<input type="date" value={sequenceOptions.start} onChange={e=>setSequenceOptions({...sequenceOptions,start:e.target.value})}/></label><label>Calendário<select value={sequenceOptions.workdays?'uteis':'corridos'} onChange={e=>setSequenceOptions({...sequenceOptions,workdays:e.target.value==='uteis'})}><option value="uteis">Segunda a sexta · sem feriados</option><option value="corridos">Dias corridos</option></select></label>{([['foundationDays','Fundações'],['columnDays','Pilares'],['beamDays','Vigas'],['slabDays','Lajes'],['otherDays','Outros serviços'],['releaseDays','Espera e liberação']] as const).map(([key,label])=><label key={key}>{label} · dias<input type="number" min="1" max="365" value={sequenceOptions[key]} onChange={e=>setSequenceOptions({...sequenceOptions,[key]:Number(e.target.value)})}/></label>)}</div>
           <p className="sequence-premise">PREMISSA: ciclo estrutural sequencial, sem frentes paralelas. Durações por pacote, sem cálculo de produtividade. A espera é uma reserva editável; não representa prazo comprovado de cura ou autorização para carregar/desescorar.</p>
-          <div className="sequence-actions"><button disabled={!inventory||inventory.complete===false} onClick={regenerate}>{bundle?.sequence?'Regerar com estas premissas':'Gerar proposta do IFC'}</button><button disabled={!bundle?.sequence||sequenceSaving} onClick={()=>void saveSequence()}>{sequenceSaving?'Salvando…':sequenceDirty?'Salvar cronograma sugerido':'Salvar cronograma'}</button><label><input type="checkbox" checked={cascade} onChange={e=>setCascade(e.target.checked)}/>Reprogramar atividades seguintes ao editar datas</label></div>
+          <div className="sequence-actions"><button disabled={!inventory||inventory.complete===false} onClick={regenerate}>{bundle?.sequence?'Regerar com estas premissas':'Gerar proposta do IFC'}</button><button disabled={!bundle||sequenceSaving} onClick={()=>void saveSequence()}>{sequenceSaving?'Salvando…':sequenceDirty?'Salvar cronograma sugerido':'Salvar cronograma'}</button><label><input type="checkbox" checked={cascade} onChange={e=>setCascade(e.target.checked)}/>Reprogramar atividades seguintes ao editar datas</label></div>
           {bundle?.sequence&&<><p><b>{bundle.wbs_rows.length} atividades · {bundle.elements.length} elementos vinculados · {bundle.sequence.pending.length} para revisar · {bundle.sequence.excluded?.length||0} vazios separados</b> · {sequenceDirty?'Alterações ainda não salvas':'Cronograma salvo'}</p><div className="sequence-table-wrap"><table className="sequence-edit-table"><thead><tr><th>EAP</th><th>Atividade / fonte</th><th>Elementos</th><th>Predecessora</th><th>Início</th><th>Término</th><th>Dias</th></tr></thead><tbody>{bundle.wbs_rows.map(row=><tr key={row.wbs}><td>{row.wbs}</td><td><b>{row.name}</b><small>{row.evidence} · {row.rule}</small></td><td>{row.direct_elements}</td><td>{row.predecessor||'—'}</td><td><input aria-label={`Início ${row.wbs}`} type="date" value={row.start?.slice(0,10)||''} onInput={e=>changeDate(row,'start',e.currentTarget.value)}/></td><td><input aria-label={`Término ${row.wbs}`} type="date" value={row.finish?.slice(0,10)||''} onInput={e=>changeDate(row,'finish',e.currentTarget.value)}/></td><td>{row.duration_days}</td></tr>)}</tbody></table></div><details><summary>Elementos fora do cronograma · {bundle.sequence.pending.length}</summary><p>Confira o pavimento e a classificação no modelo e recarregue, ou revise o pacote JSON. Nenhum desses elementos foi descartado do visualizador. A lista mostra os primeiros 100; o pacote do cronograma mantém todos os registros.</p>{bundle.sequence.pending.slice(0,100).map((item,index)=><p key={`${item.id}-${index}`}><b>{item.name}</b> · {item.type} · {item.globalId||item.id} · {item.reason}</p>)}</details></>}
           {inventory&&bundle?.wbs_rows.length&&!bundle.sequence&&<p>Há um cronograma ativo. “Gerar proposta do IFC” substitui a programação no rascunho; a substituição só é mantida após salvar.</p>}
         </section>
@@ -739,16 +744,22 @@ export default function PlanejamentoPage() {
           <div className="schedule-toolbar" id="eap">
             <div className="schedule-toolbar-primary">
               <button className="primary" onClick={() => fileRef.current?.click()}>↥ ATUALIZAR CRONOGRAMA</button>
+              <button onClick={()=>openActivityEditor('add')}>+ ATIVIDADE</button>
+              <button disabled={!bundle.wbs_rows.some(r=>r.wbs===selectedWbs&&!r.summary)} onClick={()=>openActivityEditor('edit')}>EDITAR</button>
+              <button disabled={!bundle.wbs_rows.some(r=>r.wbs===selectedWbs&&!r.summary)} onClick={deleteSelectedActivity}>REMOVER</button>
+              <button disabled={!undoStack.length} onClick={undoEdit}>DESFAZER</button>
+              <button disabled={!sequenceDirty||sequenceSaving} onClick={()=>void saveSequence()}>{sequenceSaving?'SALVANDO…':'SALVAR CRONOGRAMA'}</button>
               <button onClick={expandAllGantt}>EXPANDIR</button>
               <button onClick={collapseAllGantt}>RECOLHER</button>
               <button onClick={focusStatusDate}>◉ DATA DE STATUS</button>
             </div>
-            <div className="schedule-toolbar-filters">
+<div className="schedule-toolbar-filters"><label>Texto<select aria-label="Tamanho do texto do Gantt" value={ganttFont} onChange={e=>setGanttFont(Number(e.target.value))}><option value={14}>Compacto</option><option value={16}>Padrão</option><option value={18}>Grande</option></select></label>
               <label className="schedule-search"><span>⌕</span><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar atividade ou WBS"/></label>
               <label><span>FASE</span><select value={phase} onChange={(event) => setPhase(event.target.value)}>{phaseOptions.map((item) => <option key={item}>{item}</option>)}</select></label>
               <div className="schedule-zoom"><button className={ganttZoom === "mes" ? "active" : ""} onClick={() => setGanttZoom("mes")}>MÊS</button><button className={ganttZoom === "semana" ? "active" : ""} onClick={() => setGanttZoom("semana")}>SEMANA</button></div>
             </div>
           </div>
+          {activityEditor&&<form className="schedule-editor-panel" onSubmit={e=>{e.preventDefault();applyActivityEditor();}}><header><h3>{activityEditor.mode==='add'?'Adicionar atividade':'Editar atividade'}</h3><small>{activityEditor.mode==='edit'?`ID interno preservado: ${activityEditor.wbs}`:'A nova atividade começa sem vínculos automáticos com o IFC.'}</small></header><label className="editor-name">Nome da atividade<input autoFocus required maxLength={300} aria-label="Nome da atividade" value={activityEditor.name} onChange={e=>setActivityEditor({...activityEditor,name:e.target.value})}/></label><label>Início<input type="date" required aria-label="Início da atividade" value={activityEditor.start} onChange={e=>setActivityEditor({...activityEditor,start:e.target.value})}/></label><label>Término<input type="date" required aria-label="Término da atividade" value={activityEditor.finish} onChange={e=>setActivityEditor({...activityEditor,finish:e.target.value})}/></label><label>Fase / pavimento<input aria-label="Fase da atividade" list="schedule-phase-names" value={activityEditor.phase} onChange={e=>setActivityEditor({...activityEditor,phase:e.target.value})}/><datalist id="schedule-phase-names">{phaseOptions.filter(p=>p!=='Todas').map(p=><option key={p} value={p}/>)}</datalist></label><label>Predecessora<select aria-label="Predecessora da atividade" value={activityEditor.predecessor} onChange={e=>setActivityEditor({...activityEditor,predecessor:e.target.value})}><option value="">Sem predecessora</option>{bundle.wbs_rows.filter(r=>!r.summary&&(activityEditor.mode==='add'||r.wbs!==activityEditor.wbs)).map((r,i)=><option key={r.wbs} value={r.wbs}>{shortId(r,activityNumbers.get(r.wbs)||i)} · {r.name}</option>)}</select></label><div className="schedule-editor-actions"><button type="submit">Aplicar ao rascunho</button><button type="button" onClick={()=>setActivityEditor(null)}>Cancelar</button><label><input type="checkbox" checked={cascade} onChange={e=>setCascade(e.target.checked)}/> Reprogramar sucessoras</label></div></form>}
           <div className="schedule-gantt-legend">
             <span><i className="summary"/>RESUMO EAP</span>
             <span><i className="critical"/>CRÍTICA / ATRASADA</span>
@@ -759,17 +770,17 @@ export default function PlanejamentoPage() {
           <div
             className="schedule-gantt-scroll"
             ref={ganttScrollRef}
-            style={{ "--gantt-chart-width": `${ganttTimeline.width}px`, "--gantt-week-width": `${ganttTimeline.pxPerDay * 7}px` } as CSSProperties}
+            style={{ "--gantt-list-width": `${columnWidths.reduce((a,b)=>a+b,0)}px`,"--gantt-columns":columnWidths.map(v=>`${v}px`).join(" "),"--gantt-font":`${ganttFont}px`,"--gantt-row-height":`${Math.round(ganttFont*2.8)}px`,"--gantt-chart-width": `${ganttTimeline.width}px`, "--gantt-week-width": `${ganttTimeline.pxPerDay * 7}px` } as CSSProperties}
           >
             <div className="schedule-gantt-grid">
-              <div className="schedule-list-head"><span>ID</span><span>ATIVIDADE</span><span>INÍCIO</span><span>TÉRMINO</span><span>PLAN.</span><span>REAL</span></div>
+              <div className="schedule-list-head">{['ID','ATIVIDADE','INÍCIO','TÉRMINO','PLAN.','REAL'].map((name,index)=><span key={name}>{name}<button className="schedule-column-resizer" role="separator" aria-label={`Redimensionar coluna ${name}`} aria-orientation="vertical" aria-valuenow={columnWidths[index]} aria-valuemin={ganttColumnMinimums[index]} aria-valuemax={index===1?1000:260} onPointerDown={e=>resizeColumn(index,e)} onKeyDown={e=>{if(!['ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();setColumnWidths(current=>current.map((v,i)=>i===index?Math.max(ganttColumnMinimums[index],Math.min(index===1?1000:260,v+(e.key==='ArrowRight'?10:-10))):v));}}/></span>)}</div>
               <div className="schedule-time-head">
                 <div className="schedule-months">{ganttTimeline.months.map((month) => <span key={`${month.label}-${month.left}`} style={{ left: month.left, width: month.width }}>{month.label}</span>)}</div>
                 <div className="schedule-ticks">{ganttTimeline.ticks.map((tick) => <span key={`${tick.label}-${tick.left}`} style={{ left: tick.left, width: tick.width }}>{tick.label}</span>)}</div>
                 <i className="schedule-status-line" style={{ left: ganttTimeline.statusLeft }}/>
               </div>
               {visibleGanttRows.map((row) => {
-                const level = ganttLevel(row);
+                const level = row.display_level??ganttLevel(row);
                 const [stateClass, stateLabel] = operationalState(row);
                 const start = ganttDate(row.start);
                 const finish = ganttDate(row.finish);
@@ -778,12 +789,12 @@ export default function PlanejamentoPage() {
                 const width = Math.max(row.milestone ? 10 : 5, durationDays * ganttTimeline.pxPerDay);
                 const barClass = row.summary ? "summary" : row.milestone ? "milestone" : stateClass === "executado" ? "done" : stateClass === "atrasado" || row.critical ? "critical" : stateClass === "em-curso" || stateClass === "deveria" ? "running" : "future";
                 const isSelected = selectedWbs === row.wbs || selectedElement?.wbs === row.wbs;
-                return <div className={`schedule-gantt-row ${row.summary ? "is-summary" : ""} ${isSelected ? "selected" : ""}`} key={row.wbs}>
+                return <div className={`schedule-gantt-row ${row.summary ? "is-summary" : ""} ${isSelected ? "selected" : ""}`} key={row.wbs} data-wbs={row.wbs}>
                   <div className="schedule-list-row" role="button" tabIndex={0} onClick={() => setSelectedWbs(row.wbs)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") setSelectedWbs(row.wbs); }}>
-                    <span className="schedule-id">{row.wbs}</span>
+                    <span className="schedule-id" title={row.virtual_group?row.name:row.wbs}>{shortId(row,activityNumbers.get(row.wbs)||0)}</span>
                     <span className="schedule-activity" style={{ paddingLeft: `${Math.min(level, 6) * 13 + 7}px` }} title={row.name}>
                       {row.summary ? <button aria-label={`${collapsedWbs.has(row.wbs) ? "Expandir" : "Recolher"} ${row.name}`} onClick={(event) => { event.stopPropagation(); toggleGanttRow(row.wbs); }}>{collapsedWbs.has(row.wbs) ? "▸" : "▾"}</button> : <i/>}
-                      <b>{row.name}</b>
+                      <b onDoubleClick={event=>{event.stopPropagation();if(!row.summary){setSelectedWbs(row.wbs);setActivityEditor({mode:"edit",wbs:row.wbs,name:row.name,start:row.start?.slice(0,10)||statusDate,finish:row.finish?.slice(0,10)||statusDate,phase:row.phases?.[0]||"Atividades",predecessor:row.predecessor||""});}}}>{row.name}</b>
                     </span>
                     <span>{compactDate(row.start)}</span>
                     <span>{compactDate(row.finish)}</span>
@@ -802,7 +813,7 @@ export default function PlanejamentoPage() {
               })}
             </div>
           </div>
-          <footer id="medicao"><span>{visibleGanttRows.length} DE {scheduleRows.length} LINHAS EXIBIDAS</span><span>CLIQUE NA SETA PARA ABRIR A EAP</span><span>O REAL É SALVO POR WBS E ATUALIZA O MODELO 4D</span></footer>
+          <footer id="medicao"><span>{visibleGanttRows.filter(r=>!r.summary).length} ATIVIDADES · {visibleGanttRows.filter(r=>r.summary).length} GRUPOS EXIBIDOS</span><span>CLIQUE NA SETA PARA ABRIR A EAP</span><span>O REAL É SALVO POR WBS E ATUALIZA O MODELO 4D</span></footer>
         </section>
 
         <section className="planning-model" id="modelo">

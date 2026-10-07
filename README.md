@@ -90,3 +90,13 @@ A leitura de classes, propriedades e pavimentos de todos os arquivos permite ger
 Cada composição tem seu pacote de cronograma no R2 e suas medições no D1, protegidos pelo proprietário. Salvar uma composição não substitui o cronograma de outra nem o antigo cronograma local da instalação. Datas editadas e a data de status permanecem no pacote salvo. Ao mudar a data, a cena e o Gantt se atualizam sem baixar ou reconstruir os IFCs. Clique em uma atividade para destacar seus elementos; clique em um elemento para consultar a atividade/WBS.
 
 A Visão geral reabre a composição ativa e fornece acesso direto ao seu Gantt. Para voltar ao modo anterior, selecione **IFC local · cronograma da instalação** no Planejamento. Salve o rascunho antes de trocar de composição. As tabelas e os dados de orçamento, compras, custos, qualidade e diário não foram migrados para escopos por composição nesta alteração.
+
+## Editor do Gantt e apresentação
+
+O Gantt mostra IDs curtos; a chave WBS completa continua preservada nos dados e aparece ao passar o mouse sobre o ID. As colunas podem ser redimensionadas pela divisória do cabeçalho, com mouse/toque ou setas do teclado. O seletor de texto oferece Compacto, Padrão e Grande. Larguras, texto e estado do menu são preferências locais do navegador.
+
+Cronogramas planos provenientes do IFC ganham grupos visuais por fase/pavimento, para expandir/recolher. Esses grupos não alteram a EAP salva. Hierarquias importadas mantêm seus resumos existentes. A barra lateral do Planejamento abre e fecha pelo botão de menu.
+
+Selecione uma atividade e use **Editar**, ou dê duplo clique no nome. É possível ajustar nome, início, término, fase e predecessora. **+ Atividade** acrescenta uma atividade sem inventar vínculos IFC. **Remover** retira a atividade e seus vínculos do rascunho, conservando a geometria original. As sucessoras são reconectadas à predecessora anterior; datas só são propagadas quando a reprogramação é ativada. Vínculos que formam ciclos são rejeitados. **Desfazer** mantém até 20 estados de edição nesta sessão. Use **Salvar cronograma** para persistir a versão revisada.
+
+Medições históricas não são apagadas ao remover uma atividade. O pacote registra as edições recentes, incluindo os vínculos removidos. O selo de autoria da plataforma aparece ao final de todas as páginas e nos visualizadores, com os dados profissionais fornecidos pelo autor.
