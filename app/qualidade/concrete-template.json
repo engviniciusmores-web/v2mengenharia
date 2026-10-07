@@ -1,0 +1,115 @@
+[
+  {
+    "sheet": "FM-0000",
+    "items": [
+      {
+        "index": 13,
+        "item": "Locação Fundações",
+        "method": "Conferir com o projeto a locação dos eixos das fundações",
+        "criterion": "Até + 10 mm"
+      },
+      {
+        "index": 14,
+        "item": "Locação Formas",
+        "method": "Conferir com o projeto a locação dos eixos das estruturas",
+        "criterion": "Até + 10 mm"
+      },
+      {
+        "index": 17,
+        "item": "Fixação / Escoramento",
+        "method": "Conferir travamento da estrutura, visualmente e exercendo força para tentar movimentar a estrutura",
+        "criterion": "Formas travadas e bem escoradas"
+      },
+      {
+        "index": 18,
+        "item": "Vedação",
+        "method": "Conferir se não há \"frestas\" nas juntas das formas, visualmente",
+        "criterion": "Formas vedadas e sem frestas"
+      },
+      {
+        "index": 19,
+        "item": "Desmoldante",
+        "method": "Conferir se está aplicado desmoldante nas paredes das formas e se o mesmo não apresenta-se em excesso, visualmente",
+        "criterion": "Desmoldante aplicado e sem excesso"
+      },
+      {
+        "index": 20,
+        "item": "Alinhamento",
+        "method": "Conferir o alinhamento das formas através de linha de nylon e/ou arame galvanizado",
+        "criterion": "Até + 5 mm / peça"
+      },
+      {
+        "index": 21,
+        "item": "Prumo",
+        "method": "Conferir o prumo das formas através de prumo de face",
+        "criterion": "Até + 2 mm / m"
+      },
+      {
+        "index": 22,
+        "item": "Nivelamento",
+        "method": "Conferir com o projeto de fôrma as cotas das peças da estruturas através de uma mangueira de nível ou nível a laser",
+        "criterion": "Até + 2 mm / m"
+      },
+      {
+        "index": 23,
+        "item": "Limpeza",
+        "method": "Conferir visualmente, se a forma apresenta-se sem pedaços de madeiras, restos de materiais em locais inadequados",
+        "criterion": "Forma limpa"
+      },
+      {
+        "index": 26,
+        "item": "Locação",
+        "method": "Conferir com o projeto estrutural (forma e armação) e trena de aço",
+        "criterion": "Até + 15mm (vigas e pilares)\nAté + 20mm (blocos e sapatas)\nAté + 50mm (lajes)"
+      },
+      {
+        "index": 27,
+        "item": "Quantidade e diâmetro",
+        "method": "Conferir com o projeto estrutural (armação) e contagem visual",
+        "criterion": "Igual quantidade e diâmetro indicada no projeto estrutural"
+      },
+      {
+        "index": 28,
+        "item": "Comprimento",
+        "method": "Conferir com o projeto estrutural (forma e armação) e trena de aço",
+        "criterion": "Até + 15mm (vigas e pilares)\nAté + 20mm (blocos e sapatas)\nAté + 30mm (lajes)"
+      },
+      {
+        "index": 29,
+        "item": "Espaçamento",
+        "method": "Conferir com o projeto estrutural (armação) e trena de aço",
+        "criterion": "Até + 20mm (vigas e pilares) Até + 30mm (lajes, blocos e sapatas)"
+      },
+      {
+        "index": 30,
+        "item": "Sentido de Armação",
+        "method": "Conferir com projeto estrutural (armação) e visual",
+        "criterion": "Igual indicação do projeto estrutural"
+      },
+      {
+        "index": 31,
+        "item": "Emendas",
+        "method": "Conforme indicação do projeto estrutural e/ou norma e trena de aço",
+        "criterion": "Até + 50mm"
+      },
+      {
+        "index": 32,
+        "item": "Fixação das barras",
+        "method": "Visual",
+        "criterion": "Resistência a peso próprio da armação e movimentação na concretagem"
+      },
+      {
+        "index": 33,
+        "item": "Recobrimento",
+        "method": "Trena de aço",
+        "criterion": "Até + 5mm"
+      },
+      {
+        "index": 34,
+        "item": "Limpeza e organização",
+        "method": "Visual",
+        "criterion": "Deve estar limpas, isentas de graxas, tintas, argamassa ou lama"
+      }
+    ]
+  }
+]

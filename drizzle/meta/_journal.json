@@ -1,0 +1,48 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1786661810554,
+      "tag": "0000_sad_susan_delgado",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1786666061736,
+      "tag": "0001_famous_gateway",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1786849506449,
+      "tag": "0002_flashy_supreme_intelligence",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1786850432884,
+      "tag": "0003_late_bedlam",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1788047825587,
+      "tag": "0004_mixed_spencer_smythe",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1788163910529,
+      "tag": "0005_colossal_phantom_reporter",
+      "breakpoints": true
+    }
+  ]
+}

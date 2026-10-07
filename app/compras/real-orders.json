@@ -1,0 +1,27 @@
+{
+  "source": "Nenhum mapa de pedidos importado",
+  "proposal": "",
+  "sheet": "A_CONFIRMAR",
+  "sourceRange": "A_CONFIRMAR",
+  "referenceDate": "2026-10-06",
+  "missingCommercialFields": [
+    "Número do pedido",
+    "Fornecedor",
+    "Data de emissão",
+    "Situação",
+    "Valor contratado",
+    "Valor entregue"
+  ],
+  "summary": {
+    "itemCount": 0,
+    "totalValue": 0,
+    "budgetLinkedCount": 0,
+    "emitImmediateCount": 0,
+    "attentionCount": 0,
+    "costCenterMismatchCount": 0,
+    "costCenterUnconfirmedCount": 0,
+    "dataIssueCount": 0,
+    "commercialStatusMissingCount": 0
+  },
+  "items": []
+}

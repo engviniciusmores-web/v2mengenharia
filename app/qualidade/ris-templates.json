@@ -1,0 +1,624 @@
+[
+  {
+    "sheet": "RIS-02",
+    "service": "MONTAGEM DE PILAR PRÉ-MOLDADO",
+    "ris": "02",
+    "revision": "00",
+    "items": [
+      {
+        "index": 8,
+        "item": "Nivelamento do castiçal",
+        "responsible": "Mestre de Obras / Encarregado / Topografo",
+        "method": "Conferir o nívelamento do castiçal com o uso de nível de bolha e/ou estação topográfica",
+        "criterion": "Nivelamento do castiçal 0,5 cm máximo"
+      },
+      {
+        "index": 12,
+        "item": "Alinhamento",
+        "responsible": "Mestre de Obras / Encarregado / Topografo",
+        "method": "Conferir o alinhamento da montagem com uso de linha ou teodolíto ou estação total topográfica",
+        "criterion": "Alinhamento de montagem 1 cm máximo"
+      },
+      {
+        "index": 16,
+        "item": "Verticalidade (prumo) do pilar",
+        "responsible": "Mestre de Obras / Encarregado / Topografo",
+        "method": "Conferir verticalidade do pilar com o uso de prumo ou teodolíto ou estação total topográfica",
+        "criterion": "Verticalidade (prumo) 1 cm máximo"
+      },
+      {
+        "index": 20,
+        "item": "Limpeza da peça e acabamento do pilar",
+        "responsible": "Mestre de Obras / Encarregado",
+        "method": "Conferir visualmente o acabamento da peça",
+        "criterion": "Pilar limpo sem manchas, quebras ou trincas"
+      },
+      {
+        "index": 24,
+        "item": "Nivelamento dos consoles",
+        "responsible": "Mestre de Obras / Encarregado / Topografo",
+        "method": "Conferir o nívelamento dos consoles com o uso de teodolito ou estação topográfica",
+        "criterion": "Nivelamento dos consoles 1 cm máximo"
+      }
+    ]
+  },
+  {
+    "sheet": "RIS-03",
+    "service": "MONTAGEM DE VIGA PRÉ-MOLDADA",
+    "ris": "03",
+    "revision": "00",
+    "items": [
+      {
+        "index": 8,
+        "item": "Alinhamento entre viga e pilar",
+        "responsible": "Mestre de Obras / Encarregado / Topografo",
+        "method": "Conferir o alinhamento da montagem com uso de linha ou teodolíto ou estação total topográfica ou régua de alumínio",
+        "criterion": "Alinhamento de montagem 0,5 cm máximo"
+      },
+      {
+        "index": 12,
+        "item": "Grauteamento",
+        "responsible": "Mestre de Obras / Encarregado",
+        "method": "Conferir visualmente se todos os pontos da viga foram grauteados",
+        "criterion": "Todos os pontos grauteados"
+      },
+      {
+        "index": 16,
+        "item": "Limpeza da peça e acabamento da viga",
+        "responsible": "Mestre de Obras / Encarregado",
+        "method": "Conferir visualmente o acabamento da peça",
+        "criterion": "Viga limpa sem manchas, quebras ou trincas"
+      },
+      {
+        "index": 20,
+        "item": "Acabamento do rejunte",
+        "responsible": "Mestre de Obras / Encarregado",
+        "method": "Conferir visualmente se acabamento do rejunte da peça está bem feito, sem excesso e/ou com falhas",
+        "criterion": "Viga sem falhas no rejuntamento"
+      },
+      {
+        "index": 24,
+        "item": "Nivelamento no topo da viga",
+        "responsible": "Mestre de Obras / Encarregado / Topografo",
+        "method": "Conferir o nívelamento do topo da viga com o uso de teodolito ou estação topográfica",
+        "criterion": "Nivelamento de topo 1 cm máximo"
+      }
+    ]
+  },
+  {
+    "sheet": "RIS-05",
+    "service": "EXECUÇÃO DE FUNDAÇÃO",
+    "ris": "05",
+    "revision": "01",
+    "items": [
+      {
+        "index": 8,
+        "item": "Profundidade da estaca",
+        "responsible": "Mestre de Obras / Encarregado",
+        "method": "Verificar com uso de trena a profundidade da escavação ",
+        "criterion": "Aceitar se estiver de acordo com o projeto"
+      },
+      {
+        "index": 13,
+        "item": "Nivelamento",
+        "responsible": "Topógrafo / Encarregado / Mestre de Obras",
+        "method": "Conferir com o projeto de fundações e o R.N. da obra usando uma mangueira de nível ou nível laser ou estação total",
+        "criterion": "Marcar parada final de concretagem"
+      },
+      {
+        "index": 17,
+        "item": "Diâmetro da estaca",
+        "responsible": "Mestre de Obras / Encarregado",
+        "method": "Verificar com trena o diâmetro  da escavação",
+        "criterion": "Aceitar se estiver de acordo com o projeto ou conforme acordado"
+      },
+      {
+        "index": 22,
+        "item": "Limpeza e Organização",
+        "responsible": "Mestre de Obras / Encarregado",
+        "method": "Visual",
+        "criterion": "Deve estar limpo e organizado"
+      },
+      {
+        "index": 26,
+        "item": "Armação",
+        "responsible": "Mestre de Obras / Encarregado",
+        "method": "Verificar com trena",
+        "criterion": "Aceitar se estiver de acordo com o projeto"
+      }
+    ]
+  },
+  {
+    "sheet": "RIS-06",
+    "service": "MONTAGEM DE PLACA FECH. PRÉ-MOLDADA",
+    "ris": "06",
+    "revision": "00",
+    "items": [
+      {
+        "index": 8,
+        "item": "Posição da peça",
+        "responsible": "Mestre de Obras / Encarregado",
+        "method": "Conferir visualmente se a posição da peça está correta",
+        "criterion": "Conforme projeto"
+      },
+      {
+        "index": 12,
+        "item": "Nivelamento do apoio da placa",
+        "responsible": "Mestre de Obras / Encarregado",
+        "method": "Conferir com nível a laser, teodolito ou estação total",
+        "criterion": "Nivelamento + 0,5 cm máximo"
+      },
+      {
+        "index": 16,
+        "item": "Alinhamento da placa",
+        "responsible": "Mestre de Obras / Encarregado",
+        "method": "Conferir o alinhamento da montagem com uso de linha ou teodolíto ou estação total topográfica",
+        "criterion": "Alinhamento de montagem 0,5 cm máximo"
+      },
+      {
+        "index": 20,
+        "item": "Verticalidade da Placa",
+        "responsible": "Mestre de Obras / Encarregado",
+        "method": "Conferir a verticalidade com uso de prumo, teodolito ou estação total",
+        "criterion": "Verticalidade 0,5 cm máximo"
+      },
+      {
+        "index": 24,
+        "item": "Limpeza da peça e acabamento das placas",
+        "responsible": "Mestre de Obras / Encarregado",
+        "method": "Conferir visualmente o acabamento da peça",
+        "criterion": "Placa limpa, sem manchas, quebras ou trincas"
+      },
+      {
+        "index": 28,
+        "item": "Retirada das cunhas",
+        "responsible": "Mestre de Obras / Encarregado",
+        "method": "Conferir visualmente se foram retiradas as cunhas de madeira nas juntas das peças",
+        "criterion": "Sem cunhas nas juntas das placas"
+      }
+    ]
+  },
+  {
+    "sheet": "RIS-07",
+    "service": "MONTAGEM DE LAJE PRÉ-MOLDADA",
+    "ris": "07",
+    "revision": "00",
+    "items": [
+      {
+        "index": 8,
+        "item": "Correta aproximação e esquadro entre as lajes e vigas",
+        "responsible": "Mestre de Obras / Encarregado",
+        "method": "Verificar com o uso de esquadro ou trena",
+        "criterion": "Esquadro 1 cm máximo"
+      },
+      {
+        "index": 12,
+        "item": "Chaveteamento das lajes",
+        "responsible": "Mestre de Obras / Encarregado",
+        "method": "Verificar visualmente se todas as juntas das lajes foram chaveteadas",
+        "criterion": "Todas juntas chaveteadas"
+      },
+      {
+        "index": 16,
+        "item": "Nivelamento da contra-flexa",
+        "responsible": "Mestre de Obras / Encarregado / Topografo",
+        "method": "Conferir com nível a laser, teodolito ou estação total",
+        "criterion": "Nivelamento 0,5 cm máximo"
+      },
+      {
+        "index": 20,
+        "item": "Limpeza da peça e acabamento das lajes",
+        "responsible": "Mestre de Obras / Encarregado",
+        "method": "Conferir visualmente o acabamento da peça",
+        "criterion": "Placa limpa, sem manchas, quebras ou trincas"
+      }
+    ]
+  },
+  {
+    "sheet": "RIS-08",
+    "service": "MONTAGEM DE ESCADA PRÉ-MOLDADA",
+    "ris": "08",
+    "revision": "00",
+    "items": [
+      {
+        "index": 8,
+        "item": "Correta aproximação e esquadro entre as lajes e vigas",
+        "responsible": "Mestre de Obras / Encarregado",
+        "method": "Verificar com o uso de esquadro ou trena",
+        "criterion": "Esquadro 1 cm máximo"
+      },
+      {
+        "index": 12,
+        "item": "Chaveteamento das lajes",
+        "responsible": "Mestre de Obras / Encarregado",
+        "method": "Verificar visualmente se todas as juntas das lajes foram chaveteadas",
+        "criterion": "Todas juntas chaveteadas"
+      },
+      {
+        "index": 16,
+        "item": "Nivelamento da contra-flexa",
+        "responsible": "Mestre de Obras / Encarregado / Topografo",
+        "method": "Conferir com nível a laser, teodolito ou estação total",
+        "criterion": "Nivelamento 0,5 cm máximo"
+      },
+      {
+        "index": 20,
+        "item": "Limpeza da peça e acabamento das lajes",
+        "responsible": "Mestre de Obras / Encarregado",
+        "method": "Conferir visualmente o acabamento da peça",
+        "criterion": "Placa limpa, sem manchas, quebras ou trincas"
+      }
+    ]
+  },
+  {
+    "sheet": "RIS-09",
+    "service": "MONTAGEM DE MURO PRÉ-MOLDADO",
+    "ris": "09",
+    "revision": "00",
+    "items": [
+      {
+        "index": 8,
+        "item": "Posição da peça",
+        "responsible": "Mestre de Obras / Encarregado",
+        "method": "Conferir visualmente se a posição da peça está correta",
+        "criterion": "Conforme projeto"
+      },
+      {
+        "index": 12,
+        "item": "Nivelamento do magro",
+        "responsible": "Mestre de Obras / Encarregado",
+        "method": "Conferir com nível a laser, teodolito ou estação total",
+        "criterion": "Nivelamento + 0,5 cm máximo"
+      },
+      {
+        "index": 16,
+        "item": "Nivel do muro",
+        "responsible": "Mestre de Obras / Encarregado",
+        "method": "Conferir com nível a laser, teodolito ou estação total",
+        "criterion": "Nivelamento + 0,5 cm máximo"
+      },
+      {
+        "index": 20,
+        "item": "Alinhamento do muro",
+        "responsible": "Mestre de Obras / Encarregado",
+        "method": "Conferir o alinhamento da montagem com uso de linha ou teodolíto ou estação total topográfica",
+        "criterion": "Alinhamento 1 cm máximo"
+      },
+      {
+        "index": 24,
+        "item": "Verticalidade do muro",
+        "responsible": "Mestre de Obras / Encarregado",
+        "method": "Conferir a verticalidade com uso de prumo, teodolito ou estação total",
+        "criterion": "Verticalidade 1 cm máximo"
+      },
+      {
+        "index": 28,
+        "item": "Limpeza da peça e acabamento do muro",
+        "responsible": "Mestre de Obras / Encarregado",
+        "method": "Conferir visualmente o acabamento da peça",
+        "criterion": "Muro limpo, sem manchas, quebras ou trincas"
+      },
+      {
+        "index": 32,
+        "item": "Grauteamento",
+        "responsible": "Mestre de Obras / Encarregado",
+        "method": "Conferir visualmente se todos os pontos do muro foram grauteados",
+        "criterion": "Todos os pontos grauteados"
+      }
+    ]
+  },
+  {
+    "sheet": "RIS-10",
+    "service": "LOCAÇÃO DA OBRA",
+    "ris": "10",
+    "revision": "00",
+    "items": [
+      {
+        "index": 8,
+        "item": "Alinhamento",
+        "responsible": "Mestre de Obras / Encarregado",
+        "method": "Conferir o alinhamento com uso de linha ou teodolíto ou estação total topográfica",
+        "criterion": "Alinhamento 0,5 cm máximo"
+      },
+      {
+        "index": 12,
+        "item": "Medidas entre eixos",
+        "responsible": "Mestre de Obras / Encarregado",
+        "method": "Conferir as medidas entre os eixos com trena ou estação total",
+        "criterion": "Medidas 0,5 cm máximo"
+      },
+      {
+        "index": 16,
+        "item": "Anotação do gabarito",
+        "responsible": "Mestre de Obras / Encarregado",
+        "method": "Conferir visualmente se todos os gabaritos estão anotados",
+        "criterion": "Todos os gabaritos marcados"
+      }
+    ]
+  },
+  {
+    "sheet": "RIS-11",
+    "service": "CHECKLIST DE VERIFICAÇÃO INICIAL DE DESLIZAMENTO DE FORMA",
+    "ris": "11",
+    "revision": "00",
+    "items": [
+      {
+        "index": 8,
+        "item": "Projeto executivo",
+        "responsible": "",
+        "method": "",
+        "criterion": ""
+      },
+      {
+        "index": 10,
+        "item": "Traço de concreto definido",
+        "responsible": "",
+        "method": "",
+        "criterion": ""
+      },
+      {
+        "index": 12,
+        "item": "Insumos de composição da massa de concreto, disponível em quantidade apta para a realização do volume necessário",
+        "responsible": "",
+        "method": "",
+        "criterion": ""
+      },
+      {
+        "index": 14,
+        "item": "Equipamento necessário para realização do ensaio de abatimento do tronco de cone e moldagem de corpos de prova para ensaios de compressão axial do concreto",
+        "responsible": "",
+        "method": "",
+        "criterion": ""
+      },
+      {
+        "index": 16,
+        "item": "Usina apta e em condições de operação",
+        "responsible": "",
+        "method": "",
+        "criterion": ""
+      },
+      {
+        "index": 18,
+        "item": "Caminhão betoneira e/ou betoneira estacionária",
+        "responsible": "",
+        "method": "",
+        "criterion": ""
+      },
+      {
+        "index": 20,
+        "item": "Bomba de concreto",
+        "responsible": "",
+        "method": "",
+        "criterion": ""
+      },
+      {
+        "index": 22,
+        "item": "Vibrador de imersão",
+        "responsible": "",
+        "method": "",
+        "criterion": ""
+      },
+      {
+        "index": 24,
+        "item": "Equipamento / forma deslizante e periféricos hidráulicos e auxiliares apto e prontos para a operação, com a possibilidade de equipamentos reservas para manutenção",
+        "responsible": "",
+        "method": "",
+        "criterion": ""
+      },
+      {
+        "index": 26,
+        "item": "Iluminação adequada para a realização do serviço",
+        "responsible": "",
+        "method": "",
+        "criterion": ""
+      },
+      {
+        "index": 28,
+        "item": "Fornecimento de energia elétrica",
+        "responsible": "",
+        "method": "",
+        "criterion": ""
+      },
+      {
+        "index": 30,
+        "item": "Madeiras e andaimes",
+        "responsible": "",
+        "method": "",
+        "criterion": ""
+      },
+      {
+        "index": 32,
+        "item": "Escadas de acesso e periferias de segurança aptas para a realização do serviço",
+        "responsible": "",
+        "method": "",
+        "criterion": ""
+      },
+      {
+        "index": 34,
+        "item": "Equipes de operação em quantidade suficiente para a realização do serviço",
+        "responsible": "",
+        "method": "",
+        "criterion": ""
+      }
+    ]
+  },
+  {
+    "sheet": "RIS-12",
+    "service": "EXECUÇÃO DE BLOCO DE FUNDAÇÃO",
+    "ris": "12",
+    "revision": "00",
+    "items": [
+      {
+        "index": 8,
+        "item": "Dimensões do bloco",
+        "responsible": "Mestre de Obras / Encarregado",
+        "method": "Verificar com trena as dimensões",
+        "criterion": "Aceitar se estiver de acordo com o projeto ou conforme acordado"
+      },
+      {
+        "index": 12,
+        "item": "Alinhamento e nivelamento do castiçal",
+        "responsible": "Mestre de Obras / Encarregado",
+        "method": "Conferir com o projeto de fundações e o R.N. da obra usando uma estação total",
+        "criterion": "0,5 cm máximo de tolerância"
+      },
+      {
+        "index": 16,
+        "item": "Armação",
+        "responsible": "Mestre de Obras / Encarregado",
+        "method": "Verificar com trena",
+        "criterion": "Aceitar se estiver de acordo com o projeto"
+      }
+    ]
+  },
+  {
+    "sheet": "RIS-13",
+    "service": "EXECUÇÃO DE ALVENARIA",
+    "ris": "13",
+    "revision": "00",
+    "items": [
+      {
+        "index": 8,
+        "item": "A base da alvenaria está devidamente locada, no esquadro e nivelada?",
+        "responsible": "Mestre de Obras / Encarregado",
+        "method": "Verificar as dimensões com trena, esquadro, prumo, nível de bolha e/ou estação topográfica",
+        "criterion": "5 mm máximo de tolerância"
+      },
+      {
+        "index": 9,
+        "item": "A base sob a qual a alvenaria será executada está limpa e sem materiais que possam prejudicar a aderência da argamassa?",
+        "responsible": "Mestre de Obras / Encarregado",
+        "method": "Visual",
+        "criterion": "Base limpa"
+      },
+      {
+        "index": 10,
+        "item": "Verificar no projeto a necessidade de impermealização da base, caso exija, a mesma encontra-se executada de forma correta e garantindo a eficiência?",
+        "responsible": "Mestre de Obras / Encarregado",
+        "method": "Visual",
+        "criterion": "Impermeabilização executada de forma correta"
+      },
+      {
+        "index": 11,
+        "item": "Os blocos a serem assentados, estão limpos e sem materiais que prejudiquem sua aplicação e desempenho?",
+        "responsible": "Mestre de Obras / Encarregado",
+        "method": "Visual",
+        "criterion": "Blocos limpos"
+      },
+      {
+        "index": 12,
+        "item": "A alvenaria foi executada no prumo e no alinhamento correto?",
+        "responsible": "Mestre de Obras / Encarregado",
+        "method": "Verificar com prumo, esquadro, nível de bolha e linha",
+        "criterion": "5 mm máximo de tolerância"
+      },
+      {
+        "index": 13,
+        "item": "As juntas da alvenaria estão preenchidas e com espessura homogênea?",
+        "responsible": "Mestre de Obras / Encarregado",
+        "method": "Visual",
+        "criterion": "Juntas preenchidas e sem alterações de espessura"
+      },
+      {
+        "index": 14,
+        "item": "As dimensões das aberturas foram executadas conforme o projeto?",
+        "responsible": "Mestre de Obras / Encarregado",
+        "method": "Verificar com trena e esquadro",
+        "criterion": "1 cm máximo de tolerância"
+      },
+      {
+        "index": 15,
+        "item": "A última fiada encontra-se nivelada e/ou encunhada da forma correta?",
+        "responsible": "Mestre de Obras / Encarregado",
+        "method": "Verificar de forma visual e com nível de bolha",
+        "criterion": "5 mm máximo de tolerância"
+      }
+    ]
+  },
+  {
+    "sheet": "RIS-14",
+    "service": "REVESTIMENTO COM ARGAMASSA - REBOCO E EMBOÇO",
+    "ris": "14",
+    "revision": "00",
+    "items": [
+      {
+        "index": 8,
+        "item": "O taliscamento foi efetuado?",
+        "responsible": "Mestre de Obras / Encarregado",
+        "method": "Visual",
+        "criterion": "Taliscamento efetuado e garantindo a espessura do revestimento"
+      },
+      {
+        "index": 9,
+        "item": "O revestimento foi executado no prumo e no alinhamento correto?",
+        "responsible": "Mestre de Obras / Encarregado",
+        "method": "Veritifcar através de um prumo de face e régua de alumínio, após a conclusão do revestimento",
+        "criterion": "3 mm máximo de tolerância"
+      },
+      {
+        "index": 10,
+        "item": "O revestimento está garantindo o esquadro?",
+        "responsible": "Mestre de Obras / Encarregado",
+        "method": "Verificar o esquadro das quinas e cantos dos ambientes e o esquadro dos vãos após a execução do revestimento",
+        "criterion": "3 mm máximo de tolerância na ponta do esquadro"
+      },
+      {
+        "index": 11,
+        "item": "As espalas encontran-se planas e niveladas?",
+        "responsible": "Mestre de Obras / Encarregado",
+        "method": "Através de mangueira de nível, nível à laser, trena, linha e nível de bolha",
+        "criterion": "3 mm máximo de tolerância"
+      },
+      {
+        "index": 12,
+        "item": "A espessura do revestimento encontra-se uniforme?",
+        "responsible": "Mestre de Obras / Encarregado",
+        "method": "Emboço de camada uniforme, de espessura nivelada",
+        "criterion": "3 cm máximo de tolerância"
+      },
+      {
+        "index": 13,
+        "item": "Revestimento da parede encontra-se com acabamento uniforme, sem fissuras de retração e ondulações?",
+        "responsible": "Mestre de Obras / Encarregado",
+        "method": "Visual",
+        "criterion": "Acabamento uniforme"
+      }
+    ]
+  },
+  {
+    "sheet": "RIS-15",
+    "service": "INSTALAÇÕES HIDRÁULICAS",
+    "ris": "15",
+    "revision": "00",
+    "items": [
+      {
+        "index": 8,
+        "item": "As instalações hidrossanitárias respeitam o projeto específico em todos os aspectos (localização dos pontos, peças, válvulas, registros, etc.)?",
+        "responsible": "Mestre de Obras / Encarregado",
+        "method": "VISUAL",
+        "criterion": "De acordo com o projeto"
+      },
+      {
+        "index": 12,
+        "item": "Foi feita a colocação dos plugs nas conexões terminais para evitar entrada de materiais que possam entupi-las?",
+        "responsible": "Mestre de Obras / Encarregado",
+        "method": "VISUAL",
+        "criterion": "De acordo."
+      },
+      {
+        "index": 16,
+        "item": "Existem registros para individualizar bombas?",
+        "responsible": "Mestre de Obras / Encarregado",
+        "method": "VISUAL",
+        "criterion": "De acordo."
+      },
+      {
+        "index": 20,
+        "item": "Após o término do serviço foi executado o teste de estanqueidade? A instalação foi aprovada?",
+        "responsible": "Mestre de Obras / Encarregado",
+        "method": "VISUAL",
+        "criterion": "De acordo."
+      }
+    ]
+  }
+]

@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-10-06T00:00:00Z",
+  "status_date": "2026-10-06",
+  "sources": {
+    "schedule": {
+      "file": "Nenhum cronograma importado",
+      "format": "A_CONFIRMAR",
+      "name": "Importe o cronograma da obra",
+      "task_count": 0
+    },
+    "links": {
+      "file": "Nenhum vínculo importado",
+      "row_count": 0
+    },
+    "ifc_models": []
+  },
+  "integrity": {
+    "task_count": 0,
+    "link_count": 0,
+    "active_element_count": 0,
+    "matched_active_elements": 0,
+    "mapped_active_elements": 0,
+    "wbs_match_percent": 0,
+    "geometry_quantity_elements": 0,
+    "geometry_quantity_coverage_percent": 0,
+    "measured_elements": 0,
+    "measurement_coverage_percent": 0,
+    "weight_total": 0,
+    "official_progress_ready": false,
+    "messages": [
+      {
+        "level": "info",
+        "code": "BASE_VAZIA",
+        "title": "Configure a sua obra",
+        "detail": "Importe o cronograma XML e abra seu IFC. Valide os vínculos e os pesos antes de medir o avanço."
+      }
+    ]
+  },
+  "progress": {
+    "planned_element_proxy_percent": null,
+    "actual_element_proxy_percent": null,
+    "official_planned_percent": null,
+    "official_actual_percent": null
+  },
+  "wbs_rows": [],
+  "elements": [],
+  "element_type_summary": []
+}

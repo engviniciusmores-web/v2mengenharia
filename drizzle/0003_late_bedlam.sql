@@ -1,0 +1,1 @@
+ALTER TABLE `procurement_order_lines` ADD `application` text DEFAULT '' NOT NULL;
