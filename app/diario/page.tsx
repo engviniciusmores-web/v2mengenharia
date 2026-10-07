@@ -197,7 +197,7 @@ export default function DiarioPage() {
   }), [records]);
 
   return <main className="rdo-page">
-    <header className="quality-topbar rdo-topbar"><a href="/">V2M ENGENHARIA · PAINEL EXECUTIVO</a><nav><a href="/">Visão geral</a><a href="/qualidade">Qualidade</a><b>Diário de Obra</b><a href="/#visualizador">BIM 4D / 5D</a></nav></header>
+    <header className="quality-topbar rdo-topbar"><a href="/">V2M ENGENHARIA · PAINEL EXECUTIVO</a><nav><a href="/">Visão geral</a><a href="/projetos">Projetos</a><a href="/qualidade">Qualidade</a><b>Diário de Obra</b><a href="/#visualizador">BIM 4D / 5D</a></nav></header>
     <section className="rdo-heading"><div><p>GESTÃO DIÁRIA DA PRODUÇÃO</p><h1>Diário de Obra</h1><span>Resumo executivo dos RDOs, ocorrências e evidências fotográficas organizados automaticamente por data.</span></div><div className="rdo-sync"><input ref={(element)=>{folderInput.current=element;if(element)element.setAttribute("webkitdirectory","")}} type="file" multiple hidden onChange={(event)=>void synchronize(event.target.files)}/><button disabled={syncing} onClick={()=>folderInput.current?.click()}>{syncing ? "SINCRONIZANDO..." : "SINCRONIZAR PASTA DE RDO"}</button><small>PDF · WORD · EXCEL · TXT · FOTOS</small></div></section>
     <section className="rdo-kpis"><article><small>DIAS REGISTRADOS</small><b>{metrics.days}</b></article><article><small>FOTOS DE CAMPO</small><b>{metrics.photos}</b></article><article><small>AGUARDANDO REVISÃO</small><b>{metrics.pending}</b></article><article><small>ÚLTIMO REGISTRO</small><b className="date">{metrics.latest ? formatDate(metrics.latest) : "—"}</b></article></section>
     {message && <p className={`rdo-message ${/falha|não foi|não contém|excede/i.test(message) ? "error" : ""}`}>{message}</p>}

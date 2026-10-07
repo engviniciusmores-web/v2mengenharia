@@ -174,3 +174,21 @@ export const financialPeriods = sqliteTable("financial_periods", {
 }, (table) => [
   index("idx_financial_periods_updated").on(table.updatedAt),
 ]);
+
+export const modelProjects = sqliteTable("model_projects", {
+  id: text("id").primaryKey(), ownerId: text("owner_id").notNull(), name: text("name").notNull(),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+}, t => [index("idx_model_projects_owner").on(t.ownerId, t.createdAt)]);
+export const modelFiles = sqliteTable("model_files", {
+  id: text("id").primaryKey(), projectId: text("project_id").notNull().references(() => modelProjects.id),
+  name: text("name").notNull(), sizeBytes: integer("size_bytes").notNull(), storageKey: text("storage_key").notNull(),
+  status: text("status").notNull().default("pending"), createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+}, t => [index("idx_model_files_project").on(t.projectId, t.status)]);
+export const modelFederations = sqliteTable("model_federations", {
+  id: text("id").primaryKey(), projectId: text("project_id").notNull().references(() => modelProjects.id), name: text("name").notNull(),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+}, t => [index("idx_model_federations_project").on(t.projectId, t.createdAt)]);
+export const modelFederationItems = sqliteTable("model_federation_items", {
+  id: text("id").primaryKey(), federationId: text("federation_id").notNull().references(() => modelFederations.id),
+  fileId: text("file_id").notNull().references(() => modelFiles.id), position: integer("position").notNull(),
+}, t => [uniqueIndex("idx_model_federation_file").on(t.federationId, t.fileId), uniqueIndex("idx_model_federation_position").on(t.federationId,t.position)]);

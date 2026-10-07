@@ -1,0 +1,6 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {validateFederation,elementKey,relativePlacement} from '../public/bim-viewer/federation-rules.js';
+const files=n=>Array.from({length:n},(_,i)=>({id:`file-${i}`,name:`model-${i}.ifc`,url:`/api/models/files/file-${i}`}));
+test('federation accepts 20 and rejects 21, zero and duplicate files',()=>{assert.equal(validateFederation(files(20)).length,20);assert.throws(()=>validateFederation(files(21)),/20/);assert.throws(()=>validateFederation([]),/20/);assert.throws(()=>validateFederation([files(1)[0],files(1)[0]]),/inválida/);});
+test('ExpressIDs and duplicated GUIDs across files retain source identity',()=>{assert.notEqual(elementKey('architecture',42),elementKey('structure',42));assert.equal(elementKey('architecture',42),'architecture:42');});
+test('a shared origin preserves relative placements at large coordinates',()=>{const first=[1,0,0,0,0,1,0,0,0,0,1,0,1000000,2000000,3000000,1],second=[...first];second[12]+=12;second[13]+=3;const a=relativePlacement(first,[1000000,2000000,3000000]),b=relativePlacement(second,[1000000,2000000,3000000]);assert.deepEqual(a.slice(12,15),[0,0,0]);assert.deepEqual(b.slice(12,15),[12,3,0]);assert.equal(first[12],1000000);});

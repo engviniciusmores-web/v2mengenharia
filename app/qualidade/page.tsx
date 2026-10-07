@@ -144,7 +144,7 @@ export default function QualidadePage() {
   const summary = { released: records.filter((r) => r.status === "released").length, nc: records.filter((r) => r.status === "nonconforming").length, open: records.filter((r) => r.status !== "released").length };
 
   return <main className="quality-page">
-    <header className="quality-topbar"><a href="/">V2M ENGENHARIA · PAINEL EXECUTIVO</a><nav><a href="/">Visão geral</a><b>Qualidade</b><a href="/diario">Diário de Obra</a><a href="/#visualizador">BIM 4D / 5D</a></nav></header>
+    <header className="quality-topbar"><a href="/">V2M ENGENHARIA · PAINEL EXECUTIVO</a><nav><a href="/">Visão geral</a><a href="/projetos">Projetos</a><b>Qualidade</b><a href="/diario">Diário de Obra</a><a href="/#visualizador">BIM 4D / 5D</a></nav></header>
     <section className="quality-heading"><div><p>CONTROLE DA QUALIDADE POR ELEMENTO</p><h1>Inspeção BIM e liberação de concretagem</h1><span>Selecione a peça, preencha a RIS correspondente e registre a liberação no mesmo fluxo.</span></div><aside><small>MODELO ATIVO</small><b>STACKER · IFC4 FEDERADO</b><em>156 elementos estruturais vinculados</em></aside></section>
     <section className="quality-kpis"><article><small>REGISTROS CRIADOS</small><b>{records.length}</b></article><article><small>LIBERADOS</small><b>{summary.released}</b></article><article><small>EM ABERTO</small><b>{summary.open}</b></article><article className={summary.nc ? "has-nc" : ""}><small>NÃO CONFORMIDADES</small><b>{summary.nc}</b></article></section>
 

@@ -392,7 +392,7 @@ export default function ComprasPage() {
         <div className="side-brand"><Image src="/v2m-brand.svg" alt="V2M ENGENHARIA" width={112} height={45}/><span>V2M<br/>GESTÃO 5D</span></div>
         <div className="project-card"><div><b>V2M ENGENHARIA</b><small>Gestão integrada de obras</small></div></div>
         <p className="nav-label">OBRA</p>
-        <nav><a href="/">Visão geral</a><a href="/planejamento">Cronograma</a><a href="/compras?tab=curva">Custos / Curva S</a><a className="active" href="/compras">Suprimentos 5D</a><a href="/qualidade">Concreto</a><a href="/planejamento#modelo">BIM 4D / 5D</a></nav>
+        <nav><a href="/">Visão geral</a><a href="/projetos">Projetos</a><a href="/planejamento">Cronograma</a><a href="/compras?tab=curva">Custos / Curva S</a><a className="active" href="/compras">Suprimentos 5D</a><a href="/qualidade">Concreto</a><a href="/planejamento#modelo">BIM 4D / 5D</a></nav>
         <p className="nav-label">GESTÃO</p>
         <nav><a href="/qualidade">Qualidade</a><a href="/#alertas">SMS</a><a href="/diario">Diário de Obra</a></nav>
         <div className="side-foot">V2M · FONTE ÚNICA<small>Orçamento · Planejamento · BIM</small></div>

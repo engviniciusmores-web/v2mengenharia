@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 const modules = [
+ ["Projetos e modelos", "/projetos", "Biblioteca de IFCs na nuvem e composição de até 20 modelos."],
  ["Planejamento", "/planejamento", "Cronograma, EAP, medições e integração com Navisworks."],
  ["Custos e Curva S", "/compras?tab=curva", "Orçado, contratado, medido, pago e projeção final."],
  ["Compras", "/compras?tab=pedidos", "Pedidos, fornecedores, itens do orçamento e vínculos com o IFC."],

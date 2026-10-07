@@ -663,7 +663,7 @@ export default function PlanejamentoPage() {
         <div className="planning-project"><b>V2M ENGENHARIA</b><small>Gestão integrada de obras</small></div>
         <p>PLANEJAMENTO</p>
         <nav>
-          <a href="/">Visao geral</a>
+          <a href="/">Visao geral</a><a href="/projetos">Projetos</a>
           <a className="active" href="/planejamento">Cronograma Gantt</a>
           <a href="#cronograma">Lista + Gantt</a>
           <a href="#modelo">Modelo 4D</a>

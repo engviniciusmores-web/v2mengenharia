@@ -56,3 +56,27 @@ pnpm run check
 - [Roteiro de testes](docs/testes.md).
 
 A ação do GitHub verifica e gera o build. A publicação no Sites é assistida pelo Codex e mantém o acesso privado. Não há deploy automático configurado entre GitHub e Sites. A estrutura de telas, estilos e funcionalidades existente foi preservada.
+
+## Biblioteca de projetos e IFCs na nuvem
+
+Abra **Projetos e modelos** (`/projetos`), crie um projeto e use **Enviar IFCs**. O arquivo original fica no R2 privado; o D1 guarda nome, tamanho, proprietário, estado e composições. Selecione de 1 a 20 IFCs, dê um nome à composição e clique em **Salvar e abrir juntos**. Uma composição salva pode ser reaberta após trocar de sessão ou dispositivo. Não há limite de 20 arquivos na biblioteca inteira; o limite se aplica a cada composição.
+
+Limites iniciais: 100 MB decimais por arquivo; 20 IFCs por composição; 5 milhões de triângulos na prévia federada. A complexidade real pode atingir a memória do navegador antes desses limites. Arquivos com falha de processamento são identificados; não são substituídos por geometria genérica. O leitor é carregado pelo CDN versionado e requer conexão.
+
+A federação mantém classe IFC, ExpressID, GlobalId e arquivo de origem. A identidade é composta por arquivo + ExpressID, evitando colisões entre disciplinas. As coordenadas usam uma única translação comum para reduzir perda de precisão, sem centralizar cada disciplina separadamente. Não há transformação automática entre sistemas de coordenadas diferentes nem detecção de interferências nesta versão.
+
+**Envio à nuvem é explícito.** Os visualizadores locais existentes continuam processando IFCs no navegador; apenas a ação **Enviar IFCs** armazena o arquivo no servidor. Nenhum IFC ou documento de cliente vai para o GitHub ou para o pacote de publicação. As APIs da biblioteca exigem identidade de usuário e restringem cada projeto ao seu proprietário. O controle externo de acesso do site continua privado.
+
+Para uma instalação local nova, aplique as migrações antes de abrir o servidor:
+
+```sh
+pnpm install --frozen-lockfile
+pnpm db:local
+pnpm dev
+```
+
+O comando de migração usa somente o banco local. Em um checkout antigo cujo banco já tenha tabelas criadas em runtime, reconcilie o histórico de migrações antes de aplicá-lo; não apague dados sem cópia de segurança. Na hospedagem, o Sites aplica a migração aditiva `0006_dry_lightspeed.sql`.
+
+A biblioteca é organizada por projeto. Os módulos anteriores de orçamento, planejamento, compras, qualidade e diário mantêm seu escopo existente por instalação; criar um projeto na biblioteca não altera esses dados nem implementa isolamento multiempresa para todos os módulos.
+
+Validação: testes de federação, upload/download e persistência em D1/R2 local, bloqueio de 21 arquivos e acesso entre proprietários; abertura real de conjuntos sintéticos no navegador. Veja também [arquitetura](docs/arquitetura.md).

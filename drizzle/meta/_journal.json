@@ -43,6 +43,13 @@
       "when": 1788163910529,
       "tag": "0005_colossal_phantom_reporter",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1791347961983,
+      "tag": "0006_dry_lightspeed",
+      "breakpoints": true
     }
   ]
 }
